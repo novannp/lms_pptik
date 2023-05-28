@@ -18,7 +18,7 @@ class CourseRepository {
 
   CourseRepository(this.client);
 
-  Future<List<dynamic>> getRecentCourse(String token) async {
+  Future<List<CourseModel>> getRecentCourses(String token) async {
     String baseUrl =
         "https://lms.pptik.id/webservice/rest/server.php/?wstoken=$token&wsfunction=core_course_get_recent_courses&moodlewsrestformat=json";
 
@@ -28,17 +28,18 @@ class CourseRepository {
     inspect(result);
     if (response.statusCode == 200) {
       if (result.isEmpty) {
-        return [];
+        return <CourseModel>[];
       }
-      return result.map((e) => CourseModel.fromJson(e)).toList();
+      return result.map<CourseModel>((e) => CourseModel.fromJson(e)).toList();
     } else {
       throw Exception();
     }
   }
 
-  Future<List<CourseModel>> getEnrolledCourse(String token) async {
+  Future<List<CourseModel>> getFilteredCourse(
+      String token, String category) async {
     String baseUrl =
-        "https://lms.pptik.id/webservice/rest/server.php/?wstoken=$token&wsfunction=core_course_get_enrolled_courses_by_timeline_classification&moodlewsrestformat=json&classification=all";
+        "https://lms.pptik.id/webservice/rest/server.php/?wstoken=$token&wsfunction=core_course_get_enrolled_courses_by_timeline_classification&moodlewsrestformat=json&classification=$category";
 
     Uri url = Uri.parse(baseUrl);
     final response = await client.get(url);
@@ -57,8 +58,12 @@ class CourseRepository {
   Future<List<MateriModel>> getMateriCourse(String token, int courseId) async {
     String baseUrl =
         "https://lms.pptik.id/webservice/rest/server.php/?wstoken=$token&wsfunction=core_course_get_contents&moodlewsrestformat=json&courseid=$courseId";
-
+    String viewUrl =
+        "https://lms.pptik.id/webservice/rest/server.php/?wstoken=$token&wsfunction=core_course_view_course&moodlewsrestformat=json&courseid=$courseId";
     Uri url = Uri.parse(baseUrl);
+    Uri viewUri = Uri.parse(viewUrl);
+    final responseView = await client.get(viewUri);
+
     final response = await client.get(url);
     final List result = jsonDecode(response.body) as List;
     inspect(result);

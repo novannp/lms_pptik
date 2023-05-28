@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-Color kPrimaryColor = const Color(0xff0165FF);
+Color kPrimaryColor = Colors.blue;
 
 Color blueForm = const Color(0xffEEF4FF);
 Color base6 = const Color(0xff454848);

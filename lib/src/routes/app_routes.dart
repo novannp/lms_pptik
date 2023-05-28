@@ -5,6 +5,8 @@ import 'package:lms_pptik/src/views/screens/login_screen.dart';
 import 'package:lms_pptik/src/views/screens/main_screen.dart';
 
 import '../views/screens/course/course_detail.dart';
+import '../views/screens/recent_course_screen.dart';
+import '../views/screens/search_screen.dart';
 import '../views/screens/splash_screen.dart';
 
 class AppRoutes {
@@ -32,6 +34,17 @@ class AppRoutes {
     ));
   }
 
+  static Page _searchScreenBuilder(BuildContext context, GoRouterState state) {
+    return const MaterialPage(
+      child: SearchScreen(),
+    );
+  }
+
+  static Page _recentCoursesScreenBuilder(
+      BuildContext context, GoRouterState state) {
+    return const MaterialPage(child: RecentCourseScreen());
+  }
+
   static GoRouter goRouter = GoRouter(
     initialLocation: splash,
     debugLogDiagnostics: true,
@@ -52,9 +65,19 @@ class AppRoutes {
               pageBuilder: _mainScreenBuilder,
               routes: [
                 GoRoute(
+                  path: 'recent_course',
+                  pageBuilder: _recentCoursesScreenBuilder,
+                  name: 'recent_course',
+                ),
+                GoRoute(
                   path: 'course',
                   pageBuilder: _courseDetailScreenBuilder,
                   name: 'course_detail',
+                ),
+                GoRoute(
+                  path: 'search',
+                  pageBuilder: _searchScreenBuilder,
+                  name: 'search',
                 )
               ])
         ],

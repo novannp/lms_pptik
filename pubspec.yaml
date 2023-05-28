@@ -53,6 +53,7 @@ dependencies:
   html_unescape: ^2.0.0
   pull_to_refresh: ^2.0.0
   flutter_widget_from_html: ^0.10.1
+  fluentui_system_icons: ^1.1.201
 
 dev_dependencies:
   flutter_test:

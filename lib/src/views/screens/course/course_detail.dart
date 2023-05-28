@@ -10,6 +10,7 @@ import 'package:lms_pptik/src/views/screens/dashboard_screen.dart';
 
 import '../../../features/course/provider/detail_course_provider.dart';
 import '../../../features/course/provider/enrolled_course_users_provider.dart';
+import '../../../features/course/provider/recent_course_provider.dart';
 import '../../../models/course_model.dart';
 import '../../../routes/app_routes.dart';
 import '../../components/loading_widget.dart';
@@ -38,69 +39,75 @@ class _CourseDetailState extends ConsumerState<CourseDetail>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            CourseCard(course: widget.course),
-            const SizedBox(height: 10),
-            Container(
-              height: 50,
-              width: MediaQuery.of(context).size.width,
-              child: TabBar(
-                padding: const EdgeInsets.all(8),
-                indicator: BoxDecoration(
-                  color: Theme.of(context).secondaryHeaderColor,
-                  borderRadius: BorderRadius.circular(8),
+    return WillPopScope(
+      onWillPop: () {
+        ref.refresh(recentCourseProvider.future);
+        return Future.value(true);
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(
+          iconTheme: const IconThemeData(color: Colors.black),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              CourseCard(course: widget.course),
+              const SizedBox(height: 10),
+              Container(
+                height: 50,
+                width: MediaQuery.of(context).size.width,
+                child: TabBar(
+                  padding: const EdgeInsets.all(8),
+                  indicator: BoxDecoration(
+                    color: Theme.of(context).secondaryHeaderColor,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                  ),
+                  unselectedLabelColor: Colors.grey.shade500,
+                  unselectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Poppins',
+                  ),
+                  labelColor: Colors.black,
+                  isScrollable: true,
+                  controller: _tabController,
+                  tabs: const [
+                    Tab(text: 'Materi'),
+                    Tab(text: 'Peserta'),
+                    Tab(text: 'Nilai'),
+                    Tab(text: 'Kompetensi'),
+                  ],
                 ),
-                labelStyle: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Poppins',
-                  fontSize: 12,
-                ),
-                unselectedLabelColor: Colors.grey.shade500,
-                unselectedLabelStyle: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Poppins',
-                ),
-                labelColor: Colors.black,
-                isScrollable: true,
-                controller: _tabController,
-                tabs: const [
-                  Tab(text: 'Materi'),
-                  Tab(text: 'Peserta'),
-                  Tab(text: 'Nilai'),
-                  Tab(text: 'Kompetensi'),
-                ],
               ),
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  Column(
-                    children: [
-                      Materi(widget.course.id!),
-                    ],
-                  ),
-                  Container(
-                    child: Member(widget.course.id!),
-                  ),
-                  Container(
-                    child: const Value(),
-                  ),
-                  Container(
-                    child: const Competention(),
-                  ),
-                ],
-              ),
-            )
-          ],
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    Column(
+                      children: [
+                        Materi(widget.course.id!),
+                      ],
+                    ),
+                    Container(
+                      child: Member(widget.course.id!),
+                    ),
+                    Container(
+                      child: const Value(),
+                    ),
+                    Container(
+                      child: const Competention(),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

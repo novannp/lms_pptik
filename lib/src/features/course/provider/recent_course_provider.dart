@@ -5,8 +5,8 @@ import '../../storage/provider/storage_provider.dart';
 import '../data/course_repository.dart';
 
 final recentCourseProvider =
-    FutureProvider.autoDispose<List<dynamic>>((ref) async {
+    FutureProvider.autoDispose<List<CourseModel>>((ref) async {
   final storage = ref.watch(storageProvider);
   final token = await storage.read('token');
-  return ref.watch(courseRepositoryProvider).getRecentCourse(token);
+  return ref.watch(courseRepositoryProvider).getRecentCourses(token);
 });

@@ -1,22 +1,24 @@
 import 'dart:math';
 
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:lms_pptik/src/extentions/int_extensions.dart';
 import 'package:lms_pptik/src/extentions/string_extensions.dart';
-import 'package:lms_pptik/src/views/components/loading_widget.dart';
 import 'package:lms_pptik/src/views/themes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../features/course/provider/enrolled_course_provider.dart';
+import '../../features/course/provider/filter_course.dart';
 import '../../features/course/provider/recent_course_provider.dart';
 import '../../features/user/provider/user_provider.dart';
 import '../../models/course_model.dart';
 import '../components/title_widget.dart';
+import 'main_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -43,6 +45,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
+    final selectedFilter = ref.watch(filterCourseProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: user.when(data: (data) {
@@ -57,10 +60,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 Container(
                   margin: const EdgeInsets.only(right: 10),
                   decoration: BoxDecoration(
-                    border: Border.all(
-                      width: 1,
-                      color: borderColor,
-                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: InkWell(
@@ -69,16 +68,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(6),
                       child: Icon(
-                        Icons.notifications,
+                        FluentIcons.alert_20_regular,
                         color: base6,
                       ),
                     ),
                   ),
                 ),
-                Container(
-                  margin: const EdgeInsets.only(right: 20),
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(data.avatar!),
+                InkWell(
+                  onTap: () {
+                    ref.watch(indexProvider.notifier).state = 3;
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 20),
+                    child: CircleAvatar(
+                      backgroundImage: NetworkImage(data.avatar!),
+                    ),
                   ),
                 ),
               ],
@@ -127,7 +131,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         controller: _refreshController,
         onRefresh: () async {
           await Future.delayed(const Duration(seconds: 2), () {
-            ref.refresh(enrolledCourseProvider.future);
+            // ref.refresh(enrolledCourseProvider.future);
             ref.refresh(recentCourseProvider.future);
             ref.refresh(userProvider.future);
           });
@@ -148,7 +152,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                 ),
                 child: InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    GoRouter.of(context).pushNamed('search');
+                  },
                   borderRadius: BorderRadius.circular(8),
                   child: Padding(
                     padding: const EdgeInsets.all(14),
@@ -163,151 +169,205 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              Consumer(
-                builder: (context, ref, child) {
-                  final recentCourse = ref.watch(recentCourseProvider);
-                  return recentCourse.when(data: (data) {
-                    return SizedBox(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const TitleWidget(text: 'Course Baru ini'),
-                          const SizedBox(height: 10),
-                          data.isEmpty
-                              ? Container(
-                                  height: 150,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: borderColor,
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.subtitles_off_outlined,
-                                          size: 60,
-                                          color: Colors.grey.shade300,
-                                        ),
-                                        const Text(
-                                            'Tidak ada kelas yang baru dibuka')
-                                      ],
-                                    ),
-                                  ),
-                                )
-                              : CourseCard(
-                                  course: data[0],
-                                  onTap: () {
-                                    GoRouter.of(context).pushNamed(
-                                        'course_detail',
-                                        extra: data[0]);
-                                  },
-                                )
-                        ],
-                      ),
-                    );
-                  }, error: (error, stackTrace) {
-                    return Text(error.toString());
-                  }, loading: () {
-                    return SizedBox(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const ShimmerWidget(height: 14, width: 100),
-                          const SizedBox(height: 10),
-                          ShimmerWidget(
-                              height: 150,
-                              width: MediaQuery.of(context).size.width)
-                        ],
-                      ),
-                    );
-                  });
-                },
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const TitleWidget(text: 'Kelas Saya'),
+                  buildDropdownFilter(selectedFilter, context),
+                ],
               ),
               const SizedBox(height: 12),
-              Consumer(
-                builder: (context, ref, child) {
-                  final recentCourse = ref.watch(enrolledCourseProvider);
-                  return recentCourse.when(data: (data) {
-                    return SizedBox(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const TitleWidget(text: 'Course Terdaftar'),
-                          const SizedBox(height: 10),
-                          Column(
-                            children: data.isEmpty
-                                ? [
-                                    Container(
-                                      height: 150,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: borderColor,
-                                          width: 1,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Center(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.subtitles_off_outlined,
-                                              size: 60,
-                                              color: Colors.grey.shade300,
-                                            ),
-                                            const Text(
-                                                'Tidak ada kelas yang terdaftar')
-                                          ],
-                                        ),
-                                      ),
-                                    )
-                                  ]
-                                : data
-                                    .map((e) => CourseCard(
-                                          course: e,
-                                          onTap: () {
-                                            GoRouter.of(context).pushNamed(
-                                                'course_detail',
-                                                extra: e);
-                                          },
-                                        ))
-                                    .toList(),
-                          )
-                        ],
-                      ),
-                    );
-                  }, error: (error, stackTrace) {
-                    return const Text('Gagal mendapatkan data');
-                  }, loading: () {
-                    return SizedBox(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const ShimmerWidget(height: 14, width: 100),
-                          const SizedBox(height: 10),
-                          ShimmerWidget(
-                              height: 150,
-                              width: MediaQuery.of(context).size.width)
-                        ],
-                      ),
-                    );
-                  });
-                },
-              ),
+              selectedFilter == 'recent'
+                  ? buildRecentCourses()
+                  : buildCoursesList(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildDropdownFilter(String selectedFilter, BuildContext context) {
+    return Consumer(
+      builder: (context, ref, child) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            DropdownButton(
+              value: selectedFilter,
+              underline: Container(),
+              iconSize: 18,
+              hint: const Text('Baru saja diakses'),
+              style: Theme.of(context).textTheme.titleSmall,
+              elevation: 0,
+              icon: const Icon(FluentIcons.chevron_down_20_regular),
+              isDense: true,
+              items: const [
+                DropdownMenuItem(
+                  value: 'recent',
+                  child: Text('Baru saja diakses'),
+                ),
+                DropdownMenuItem(
+                  value: 'all',
+                  child: Text('Semua kelas'),
+                ),
+                DropdownMenuItem(
+                  value: 'inprogress',
+                  child: Text('Dalam progress'),
+                ),
+                DropdownMenuItem(
+                  value: 'past',
+                  child: Text('Kelas lalu'),
+                ),
+                DropdownMenuItem(
+                  value: 'favourites',
+                  child: Text('Kelas Favorit'),
+                ),
+              ],
+              onChanged: (value) {
+                ref.watch(filterCourseProvider.notifier).state =
+                    value.toString();
+                ref.refresh(filteredCourseProvider);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Consumer buildCoursesList() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final filteredCourse = ref.watch(filteredCourseProvider);
+        return filteredCourse.when(data: (data) {
+          return SizedBox(
+            child: data.isEmpty
+                ? Container(
+                    height: 150,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: borderColor,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.subtitles_off_outlined,
+                            size: 60,
+                            color: Colors.grey.shade300,
+                          ),
+                          const Text('Kelas tidak ada')
+                        ],
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: [
+                      ListView.builder(
+                        primary: false,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: data.length,
+                        itemBuilder: (context, index) {
+                          return CourseCard(
+                            course: data[index],
+                            onTap: () {
+                              GoRouter.of(context)
+                                  .pushNamed('course_detail', extra: e);
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+          );
+        }, error: (error, stackTrace) {
+          return const Text('Gagal mendapatkan data');
+        }, loading: () {
+          return SizedBox(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const ShimmerWidget(height: 14, width: 100),
+                const SizedBox(height: 10),
+                ShimmerWidget(
+                    height: 150, width: MediaQuery.of(context).size.width)
+              ],
+            ),
+          );
+        });
+      },
+    );
+  }
+
+  Consumer buildRecentCourses() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final recentCourse = ref.watch(recentCourseProvider);
+        return recentCourse.when(data: (data) {
+          return SizedBox(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                data.isEmpty
+                    ? Container(
+                        height: 150,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: borderColor,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.subtitles_off_outlined,
+                                size: 60,
+                                color: Colors.grey.shade300,
+                              ),
+                              const Text('Tidak ada kelas yang baru dibuka')
+                            ],
+                          ),
+                        ),
+                      )
+                    : CourseCard(
+                        course: data[0],
+                        onTap: () {
+                          GoRouter.of(context)
+                              .pushNamed('course_detail', extra: data[0]);
+                        },
+                      )
+              ],
+            ),
+          );
+        }, error: (error, stackTrace) {
+          return Text(error.toString());
+        }, loading: () {
+          return SizedBox(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const ShimmerWidget(height: 14, width: 100),
+                const SizedBox(height: 10),
+                ShimmerWidget(
+                    height: 150, width: MediaQuery.of(context).size.width)
+              ],
+            ),
+          );
+        });
+      },
     );
   }
 
@@ -399,7 +459,7 @@ AppBar appBarError(BuildContext context) {
               child: Padding(
                 padding: const EdgeInsets.all(6),
                 child: Icon(
-                  Icons.notifications,
+                  FluentIcons.alert_24_regular,
                   color: base6,
                 ),
               ),
@@ -499,11 +559,12 @@ class CourseCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            Positioned(
-              bottom: -35,
-              left: 30,
-              height: 150,
+            Align(
+              alignment: Alignment.bottomRight,
               child: SvgPicture.asset(
+                width: 120,
+                fit: BoxFit.fitHeight,
+                alignment: Alignment.bottomRight,
                 'assets/images/course_bg.svg',
               ),
             ),
