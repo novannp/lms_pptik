@@ -12,32 +12,11 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
-    GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
     return Scaffold(
       key: _scaffoldKey,
-      endDrawer: Drawer(
-          child: Column(
-        children: [
-          const Spacer(),
-          ElevatedButton.icon(
-            onPressed: () async {
-              await ref.watch(authNotifierProvider.notifier).logout();
-              GoRouter.of(context).goNamed(AppRoutes.login);
-            },
-            icon: const Icon(Icons.logout),
-            label: const Text('Keluar'),
-          )
-        ],
-      )),
       appBar: AppBar(
         actionsIconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          IconButton(
-              onPressed: () {
-                _scaffoldKey.currentState!.openEndDrawer();
-              },
-              icon: const Icon(Icons.menu))
-        ],
         titleTextStyle: const TextStyle(
           color: Colors.black,
           fontWeight: FontWeight.bold,
@@ -139,6 +118,18 @@ class ProfileScreen extends ConsumerWidget {
               ),
               title: const Text('Manajemen File'),
               trailing: const Icon(Icons.chevron_right),
+            ),
+            ListTile(
+              onTap: () {
+                ref.watch(authNotifierProvider.notifier).logout().then((value) {
+                  GoRouter.of(context).goNamed(AppRoutes.login);
+                });
+              },
+              leading: const Icon(
+                Icons.logout,
+                color: Colors.black,
+              ),
+              title: const Text('Keluar'),
             ),
           ],
         ),

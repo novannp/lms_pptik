@@ -26,7 +26,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  RefreshController _refreshController =
+  final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   void playWelcomeAudio() async {
     final player = AudioPlayer();
@@ -50,6 +50,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           toolbarHeight: 80,
+          leadingWidth: 0,
           actions: [
             Row(
               children: [

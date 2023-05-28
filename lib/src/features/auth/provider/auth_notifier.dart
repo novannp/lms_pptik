@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lms_pptik/src/features/auth/data/auth_repository.dart';
 import 'package:lms_pptik/src/features/user/provider/user_provider.dart';
+import 'package:lms_pptik/src/views/screens/main_screen.dart';
 
 import '../../storage/provider/storage_provider.dart';
 import '../../storage/service/secure_storage_service.dart';
@@ -46,6 +47,7 @@ class AuthNotifier extends StateNotifier<String> {
     await storage.deleteAll();
     ref.invalidate(authNotifierProvider);
     ref.invalidate(userProvider);
+    ref.invalidate(indexProvider);
   }
 }
 
