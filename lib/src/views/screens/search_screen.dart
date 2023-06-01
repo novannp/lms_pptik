@@ -1,7 +1,10 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lms_pptik/src/views/components/loading_widget.dart';
+import 'package:lms_pptik/src/views/screens/dashboard_screen.dart';
 
+import '../../features/course/provider/search_course_provider.dart';
 import '../themes.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -26,8 +29,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.dispose();
   }
 
+  void handleSearchTextChange(String searchText) {
+    ref.watch(searchQueryProvider.notifier).state = searchText;
+    ref.refresh(searchCourseProvider.future);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final search = ref.watch(searchCourseProvider);
     return Scaffold(
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.black),
@@ -39,6 +48,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         child: Column(
           children: [
             TextField(
+              controller: _searchController,
+              keyboardType: TextInputType.text,
+              onChanged: (value) => handleSearchTextChange(value),
               autofocus: true,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.all(5),
@@ -68,6 +80,29 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+            search.when(
+                data: (data) {
+                  if (data.isEmpty) {
+                    return const Center(
+                      child: Text('Tidak ada hasil'),
+                    );
+                  }
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: data.length,
+                      itemBuilder: (context, index) {
+                        return CourseCard(course: data[index]);
+                      },
+                    ),
+                  );
+                },
+                error: (error, stackTrace) {
+                  return const Center(
+                    child: Text('Gagal melakukan pencarian'),
+                  );
+                },
+                loading: () => Loading())
           ],
         ),
       ),

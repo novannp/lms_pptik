@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 class CourseModel {
   final int? id;
   final String? fullname;
@@ -20,6 +22,7 @@ class CourseModel {
   final int? timeaccess;
   final bool? showshortname;
   final String? coursecategory;
+  final List? contact;
 
   CourseModel({
     required this.id,
@@ -43,6 +46,7 @@ class CourseModel {
     required this.timeaccess,
     required this.showshortname,
     required this.coursecategory,
+    required this.contact,
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) => CourseModel(
@@ -66,7 +70,8 @@ class CourseModel {
         hidden: json["hidden"],
         timeaccess: json["timeaccess"],
         showshortname: json["showshortname"],
-        coursecategory: json["coursecategory"],
+        coursecategory: json["coursecategory"] ?? json['categoryname'],
+        contact: json['contacts'],
       );
 
   Map<String, dynamic> toJson() => {

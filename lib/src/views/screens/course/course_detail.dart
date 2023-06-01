@@ -1,3 +1,4 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -5,19 +6,22 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lms_pptik/src/extentions/date_time_extension.dart';
 import 'package:lms_pptik/src/extentions/string_extensions.dart';
-import 'package:lms_pptik/src/views/components/title_widget.dart';
 import 'package:lms_pptik/src/views/screens/dashboard_screen.dart';
 
 import '../../../features/course/provider/detail_course_provider.dart';
 import '../../../features/course/provider/enrolled_course_users_provider.dart';
 import '../../../features/course/provider/recent_course_provider.dart';
 import '../../../models/course_model.dart';
-import '../../../routes/app_routes.dart';
+import '../../../models/module.dart';
 import '../../components/loading_widget.dart';
 part 'materi.dart';
 part 'member.dart';
 part 'competention.dart';
 part 'value.dart';
+
+final tabIndexProvider = StateProvider<int>((ref) {
+  return 0;
+});
 
 class CourseDetail extends ConsumerStatefulWidget {
   final CourseModel course;
@@ -39,12 +43,21 @@ class _CourseDetailState extends ConsumerState<CourseDetail>
 
   @override
   Widget build(BuildContext context) {
+    final tabIndex = ref.watch(tabIndexProvider);
     return WillPopScope(
       onWillPop: () {
         ref.refresh(recentCourseProvider.future);
         return Future.value(true);
       },
       child: Scaffold(
+        floatingActionButton: Visibility(
+          visible: tabIndex == 0,
+          child: FloatingActionButton(
+            tooltip: 'Tampilkan list materi',
+            onPressed: () {},
+            child: const Icon(FluentIcons.list_28_regular),
+          ),
+        ),
         backgroundColor: Colors.grey.shade50,
         appBar: AppBar(
           iconTheme: const IconThemeData(color: Colors.black),
@@ -59,6 +72,9 @@ class _CourseDetailState extends ConsumerState<CourseDetail>
                 height: 50,
                 width: MediaQuery.of(context).size.width,
                 child: TabBar(
+                  onTap: (value) {
+                    ref.watch(tabIndexProvider.notifier).state = value;
+                  },
                   padding: const EdgeInsets.all(8),
                   indicator: BoxDecoration(
                     color: Theme.of(context).secondaryHeaderColor,

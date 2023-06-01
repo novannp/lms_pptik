@@ -1,21 +1,24 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/io_client.dart';
 import 'package:lms_pptik/src/features/http/provider/http_provider.dart';
+import 'package:lms_pptik/src/features/storage/service/secure_storage_service.dart';
 
 import '../../../models/user_model.dart';
+import '../../storage/provider/storage_provider.dart';
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return UserRepository(ref.watch(httpProvider));
+  return UserRepository(
+      client: ref.watch(httpProvider), storage: ref.watch(storageProvider));
 });
 
 class UserRepository {
   final IOClient client;
+  final SecureStorageService storage;
 
-  UserRepository(this.client);
+  UserRepository({required this.client, required this.storage});
 
   Future<UserModel> getUser(String username, String token) async {
     String baseUrl =
@@ -26,6 +29,7 @@ class UserRepository {
     final result = jsonDecode(response.body);
     inspect(result);
     if (response.statusCode == 200) {
+      storage.write('name', result[0]['fullname']);
       return UserModel.fromJson(result[0]);
     } else {
       throw Exception();

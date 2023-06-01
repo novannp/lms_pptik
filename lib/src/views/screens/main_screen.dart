@@ -1,10 +1,14 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lms_pptik/src/features/user/provider/user_provider.dart';
 import 'package:lms_pptik/src/views/screens/notification_screen.dart';
 import 'package:lms_pptik/src/views/screens/profile_screen.dart';
 import 'package:lms_pptik/src/views/themes.dart';
 
+import '../../features/storage/provider/storage_provider.dart';
 import 'calendar_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -20,6 +24,18 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class MainScreenState extends ConsumerState<MainScreen> {
+  AwesomeNotifications awesomeNotifications = AwesomeNotifications();
+  @override
+  void initState() {
+    awesomeNotifications.isNotificationAllowed().then((isAllowed) {
+      if (!isAllowed) {
+        AwesomeNotifications().requestPermissionToSendNotifications();
+      }
+    });
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -5,6 +5,7 @@ import 'package:lms_pptik/src/features/auth/data/auth_repository.dart';
 import 'package:lms_pptik/src/features/user/provider/user_provider.dart';
 import 'package:lms_pptik/src/views/screens/main_screen.dart';
 
+import '../../notification/provider/notification_provider.dart';
 import '../../storage/provider/storage_provider.dart';
 import '../../storage/service/secure_storage_service.dart';
 
@@ -31,6 +32,7 @@ class AuthNotifier extends StateNotifier<String> {
         final String token = result['token'];
         storage.write('token', token);
         storage.write('username', username);
+        storage.write('password', password);
         message = 'success';
         return message;
       } else {
@@ -48,6 +50,7 @@ class AuthNotifier extends StateNotifier<String> {
     ref.invalidate(authNotifierProvider);
     ref.invalidate(userProvider);
     ref.invalidate(indexProvider);
+    ref.invalidate(notifiedProvider);
   }
 }
 

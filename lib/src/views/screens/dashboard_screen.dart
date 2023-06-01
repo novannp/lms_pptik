@@ -1,13 +1,14 @@
 import 'dart:math';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:lms_pptik/src/extentions/int_extensions.dart';
 import 'package:lms_pptik/src/extentions/string_extensions.dart';
+import 'package:lms_pptik/src/models/user_model.dart';
 import 'package:lms_pptik/src/views/themes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
@@ -15,6 +16,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../features/course/provider/enrolled_course_provider.dart';
 import '../../features/course/provider/filter_course.dart';
 import '../../features/course/provider/recent_course_provider.dart';
+import '../../features/notification/provider/notification_provider.dart';
 import '../../features/user/provider/user_provider.dart';
 import '../../models/course_model.dart';
 import '../components/title_widget.dart';
@@ -30,6 +32,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
+
   void playWelcomeAudio() async {
     final player = AudioPlayer();
     await player.setAsset('assets/audio/Selamat Datang.mp3');
@@ -39,89 +42,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    playWelcomeAudio();
+    // playWelcomeAudio();
+  }
+
+  showWelcomeNotification(String name) {
+    AwesomeNotifications().createNotification(
+      content: NotificationContent(
+        category: NotificationCategory.Email,
+        ticker: 'Welcome',
+        id: 10,
+        channelKey: 'welcome',
+        title: 'Hallo! $name',
+        body: 'Selamat datang di LMS PPTIK',
+      ),
+    );
+    Future(() {
+      final notifierdNotifier = ref.watch(notifiedProvider.notifier);
+      notifierdNotifier.state = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
     final selectedFilter = ref.watch(filterCourseProvider);
+    final notified = ref.watch(notifiedProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: user.when(data: (data) {
-        return AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          toolbarHeight: 80,
-          leadingWidth: 0,
-          actions: [
-            Row(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(right: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: () {},
-                    child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: Icon(
-                        FluentIcons.alert_20_regular,
-                        color: base6,
-                      ),
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    ref.watch(indexProvider.notifier).state = 3;
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 20),
-                    child: CircleAvatar(
-                      backgroundImage: NetworkImage(data.avatar!),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          ],
-          titleTextStyle: const TextStyle(color: Colors.black),
-          title: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'LMS PPTIK',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall!
-                      .copyWith(fontWeight: FontWeight.bold),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Halo, ',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleSmall!
-                          .copyWith(fontWeight: FontWeight.normal),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(data.name ?? '',
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall)
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
+        // Show notification only one time
+        if (user.value != null) {
+          if (notified) {
+            showWelcomeNotification(data.name!);
+          }
+        }
+        return buildAppBar(data, context);
       }, error: (error, stacktrace) {
         return appBarError(context);
       }, loading: () {
@@ -131,7 +87,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         controller: _refreshController,
         onRefresh: () async {
           await Future.delayed(const Duration(seconds: 2), () {
-            // ref.refresh(enrolledCourseProvider.future);
+            ref.refresh(filteredCourseProvider.future);
             ref.refresh(recentCourseProvider.future);
             ref.refresh(userProvider.future);
           });
@@ -143,31 +99,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: borderColor,
-                    width: 1,
-                  ),
-                ),
-                child: InkWell(
-                  onTap: () {
-                    GoRouter.of(context).pushNamed('search');
-                  },
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.search),
-                        SizedBox(width: 10),
-                        Text('Cari kelas'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              buildSearchButton(context),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -187,6 +119,110 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
+  AppBar buildAppBar(UserModel data, BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      toolbarHeight: 80,
+      leadingWidth: 0,
+      actions: [
+        Row(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(right: 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () {},
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(
+                    FluentIcons.alert_20_regular,
+                    color: base6,
+                  ),
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                ref.watch(indexProvider.notifier).state = 3;
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 20),
+                child: CircleAvatar(
+                  backgroundImage: NetworkImage(data.avatar!),
+                ),
+              ),
+            ),
+          ],
+        )
+      ],
+      titleTextStyle: const TextStyle(color: Colors.black),
+      title: Padding(
+        padding: const EdgeInsets.only(left: 8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'LMS PPTIK',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall!
+                  .copyWith(fontWeight: FontWeight.bold),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  'Halo, ',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall!
+                      .copyWith(fontWeight: FontWeight.normal),
+                ),
+                const SizedBox(height: 12),
+                Text(data.name ?? '',
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall)
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Container buildSearchButton(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: borderColor,
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        onTap: () {
+          GoRouter.of(context).pushNamed('search');
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: const [
+              Icon(Icons.search),
+              SizedBox(width: 10),
+              Text('Cari kelas'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget buildDropdownFilter(String selectedFilter, BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
@@ -194,6 +230,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             DropdownButton(
+              alignment: Alignment.centerRight,
               value: selectedFilter,
               underline: Container(),
               iconSize: 18,
@@ -213,7 +250,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
                 DropdownMenuItem(
                   value: 'inprogress',
-                  child: Text('Dalam progress'),
+                  child: Text('Dalam proses'),
                 ),
                 DropdownMenuItem(
                   value: 'past',
@@ -240,7 +277,83 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return Consumer(
       builder: (context, ref, child) {
         final filteredCourse = ref.watch(filteredCourseProvider);
-        return filteredCourse.when(data: (data) {
+        return filteredCourse.when(
+            skipLoadingOnReload: false,
+            skipLoadingOnRefresh: false,
+            data: (data) {
+              return SizedBox(
+                child: data.isEmpty
+                    ? Container(
+                        height: 150,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: borderColor,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.subtitles_off_outlined,
+                                size: 60,
+                                color: Colors.grey.shade300,
+                              ),
+                              const Text('Kelas tidak ada')
+                            ],
+                          ),
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          ListView.builder(
+                            primary: false,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: data.length,
+                            itemBuilder: (context, index) {
+                              return CourseCard(
+                                course: data[index],
+                                onTap: () {
+                                  GoRouter.of(context).pushNamed(
+                                      'course_detail',
+                                      extra: data[index]);
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+              );
+            },
+            error: (error, stackTrace) {
+              return const Text('Gagal mendapatkan data');
+            },
+            loading: () {
+              return SizedBox(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const ShimmerWidget(height: 14, width: 100),
+                    const SizedBox(height: 10),
+                    ShimmerWidget(
+                        height: 150, width: MediaQuery.of(context).size.width)
+                  ],
+                ),
+              );
+            });
+      },
+    );
+  }
+
+  Consumer buildRecentCourses() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final recentCourse = ref.watch(recentCourseProvider);
+        return recentCourse.when(data: (data) {
           return SizedBox(
             child: data.isEmpty
                 ? Container(
@@ -261,7 +374,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             size: 60,
                             color: Colors.grey.shade300,
                           ),
-                          const Text('Kelas tidak ada')
+                          const Text('Tidak ada kelas yang baru dibuka')
                         ],
                       ),
                     ),
@@ -277,79 +390,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           return CourseCard(
                             course: data[index],
                             onTap: () {
-                              GoRouter.of(context)
-                                  .pushNamed('course_detail', extra: e);
+                              GoRouter.of(context).pushNamed('course_detail',
+                                  extra: data[index]);
                             },
                           );
                         },
                       ),
                     ],
                   ),
-          );
-        }, error: (error, stackTrace) {
-          return const Text('Gagal mendapatkan data');
-        }, loading: () {
-          return SizedBox(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                const ShimmerWidget(height: 14, width: 100),
-                const SizedBox(height: 10),
-                ShimmerWidget(
-                    height: 150, width: MediaQuery.of(context).size.width)
-              ],
-            ),
-          );
-        });
-      },
-    );
-  }
-
-  Consumer buildRecentCourses() {
-    return Consumer(
-      builder: (context, ref, child) {
-        final recentCourse = ref.watch(recentCourseProvider);
-        return recentCourse.when(data: (data) {
-          return SizedBox(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-                data.isEmpty
-                    ? Container(
-                        height: 150,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: borderColor,
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.subtitles_off_outlined,
-                                size: 60,
-                                color: Colors.grey.shade300,
-                              ),
-                              const Text('Tidak ada kelas yang baru dibuka')
-                            ],
-                          ),
-                        ),
-                      )
-                    : CourseCard(
-                        course: data[0],
-                        onTap: () {
-                          GoRouter.of(context)
-                              .pushNamed('course_detail', extra: data[0]);
-                        },
-                      )
-              ],
-            ),
           );
         }, error: (error, stackTrace) {
           return Text(error.toString());
@@ -552,7 +600,7 @@ class CourseCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         width: MediaQuery.of(context).size.width - 40,
-        height: 150,
+        height: 100,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           color: flatColor[_random.nextInt(8)],
@@ -572,44 +620,90 @@ class CourseCard extends StatelessWidget {
               padding: const EdgeInsets.all(10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${course.fullname.toString().decodeHtml()} (${course.shortname})' ??
-                        '',
-                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  Text(
-                    course.coursecategory.toString().decodeHtml(),
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall!
-                        .copyWith(color: Colors.white),
-                  ),
-                  const Spacer(),
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          backgroundColor: Colors.black.withOpacity(0.2),
-                          color: Colors.white,
-                          value: course.progress! / 100,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
                       Text(
-                        '${course.progress}% Selesai',
+                        '${course.fullname.toString().decodeHtml()} (${course.shortname})' ??
+                            course.fullname.toString().decodeHtml(),
+                        style:
+                            Theme.of(context).textTheme.titleMedium!.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                      ),
+                      Text(
+                        course.coursecategory.toString().decodeHtml(),
                         style: Theme.of(context)
                             .textTheme
-                            .labelMedium!
+                            .titleSmall!
                             .copyWith(color: Colors.white),
-                      )
+                      ),
                     ],
-                  )
+                  ),
+                  course.progress != null ? const Spacer() : SizedBox(),
+                  if (course.contact != null)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          child: Icon(FluentIcons.person_20_regular,
+                              color: Colors.white, size: 20),
+                        ),
+                        const SizedBox(width: 10),
+                        Builder(builder: (context) {
+                          if (course.contact!.isEmpty) {
+                            return Text(
+                              'Tidak ada nama pengajar',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium!
+                                  .copyWith(color: Colors.white),
+                            );
+                          }
+                          return Row(
+                            children: course.contact!
+                                .map(
+                                  (e) => Text(
+                                    ' ${e['fullname'].toString().decodeHtml()} |',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelMedium!
+                                        .copyWith(color: Colors.white),
+                                  ),
+                                )
+                                .toList(),
+                          );
+                        })
+                      ],
+                    )
+                  else
+                    SizedBox(),
+                  course.progress != null
+                      ? Row(
+                          children: [
+                            SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                backgroundColor: Colors.black.withOpacity(0.2),
+                                color: Colors.white,
+                                value: course.progress! / 100,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              '${course.progress}% Selesai',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium!
+                                  .copyWith(color: Colors.white),
+                            )
+                          ],
+                        )
+                      : SizedBox()
                 ],
               ),
             ),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lms_pptik/src/features/storage/provider/storage_provider.dart';
 
+import '../../features/auth/provider/auth_notifier.dart';
 import '../../routes/app_routes.dart';
 import '../components/loading_widget.dart';
 
@@ -17,10 +19,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     Future.delayed(const Duration(seconds: 3), () {
-      ref.watch(storageProvider).read('token').then((value) {
-        if (value == null) {
+      ref.watch(storageProvider).readAll().then((value) {
+        if (value['token'] == null) {
           GoRouter.of(context).pushReplacementNamed(AppRoutes.login);
         } else {
+          ref
+              .watch(authNotifierProvider.notifier)
+              .login(value['username'], value['password']);
           GoRouter.of(context).pushReplacementNamed(AppRoutes.main);
         }
       });
@@ -35,9 +40,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FlutterLogo(
-              style: FlutterLogoStyle.stacked,
-              size: 70,
+            SvgPicture.asset(
+              'assets/icons/logo.svg',
+              width: 200,
             ),
             Loading()
           ],

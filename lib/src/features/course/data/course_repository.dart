@@ -94,4 +94,22 @@ class CourseRepository {
       throw Exception();
     }
   }
+
+  Future<List<CourseModel>> searchCourse(String token, String query) async {
+    String baseUrl =
+        "https://lms.pptik.id/webservice/rest/server.php/?wstoken=$token&wsfunction=core_course_search_courses&moodlewsrestformat=json&criterianame=search&criteriavalue=$query";
+
+    Uri url = Uri.parse(baseUrl);
+    final response = await client.get(url);
+    final List result = jsonDecode(response.body)['courses'] as List;
+    inspect(result);
+    if (response.statusCode == 200) {
+      if (result.isEmpty) {
+        return <CourseModel>[];
+      }
+      return result.map((e) => CourseModel.fromJson(e)).toList();
+    } else {
+      throw Exception();
+    }
+  }
 }

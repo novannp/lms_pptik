@@ -4,7 +4,9 @@ import 'package:lms_pptik/src/models/course_model.dart';
 import 'package:lms_pptik/src/views/screens/login_screen.dart';
 import 'package:lms_pptik/src/views/screens/main_screen.dart';
 
+import '../models/module.dart';
 import '../views/screens/course/course_detail.dart';
+import '../views/screens/course/materi_detail.dart';
 import '../views/screens/recent_course_screen.dart';
 import '../views/screens/search_screen.dart';
 import '../views/screens/splash_screen.dart';
@@ -45,6 +47,15 @@ class AppRoutes {
     return const MaterialPage(child: RecentCourseScreen());
   }
 
+  static Page _materiDetailScreenBuilder(
+      BuildContext context, GoRouterState state) {
+    final data = state.extra as MateriModel;
+    return MaterialPage(
+        child: MateriDetailScreen(
+      data: data,
+    ));
+  }
+
   static GoRouter goRouter = GoRouter(
     initialLocation: splash,
     debugLogDiagnostics: true,
@@ -70,10 +81,16 @@ class AppRoutes {
                   name: 'recent_course',
                 ),
                 GoRoute(
-                  path: 'course',
-                  pageBuilder: _courseDetailScreenBuilder,
-                  name: 'course_detail',
-                ),
+                    path: 'course',
+                    pageBuilder: _courseDetailScreenBuilder,
+                    name: 'course_detail',
+                    routes: [
+                      GoRoute(
+                        path: 'materi',
+                        pageBuilder: _materiDetailScreenBuilder,
+                        name: 'materi_detail',
+                      ),
+                    ]),
                 GoRoute(
                   path: 'search',
                   pageBuilder: _searchScreenBuilder,

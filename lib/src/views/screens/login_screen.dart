@@ -68,6 +68,8 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
                       TextFormField(
+                        enableSuggestions: true,
+                        autocorrect: true,
                         onTap: () {
                           // Scroll to the bottom of the screen when TextFormField is tapped
                           _scrollController.animateTo(

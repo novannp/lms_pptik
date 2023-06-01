@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:lms_pptik/src/views/themes.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
