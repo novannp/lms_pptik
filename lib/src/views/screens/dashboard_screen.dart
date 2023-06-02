@@ -93,7 +93,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final user = ref.watch(userProvider);
     final selectedFilter = ref.watch(filterCourseProvider);
     final notified = ref.watch(notifiedProvider);
-    final notif = ref.watch(userNotificationProvider(user.value!.id as int));
+    final notification = user.value?.id != null
+        ? ref.watch(userNotificationProvider(user.value!.id as int))
+        : null;
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGroupedBackground,
@@ -171,19 +173,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 GoRouter.of(context).pushNamed('notification',
                     extra: ref.watch(userProvider).value!.id);
               },
-              child: Builder(builder: (context) {
-                return Badge(
-                    label: Text(
-                      notif.when(data: (data) {
-                        return (data.length.toString());
-                      }, error: (error, stacktrace) {
-                        return '0';
-                      }, loading: () {
-                        return '0';
-                      }),
-                    ),
-                    child: const Icon(CupertinoIcons.bell));
-              }),
+              child: Badge(
+                label: Text(
+                  notification != null
+                      ? notification.when(data: (data) {
+                          return data.length.toString();
+                        }, error: (error, stackTrace) {
+                          return '0';
+                        }, loading: () {
+                          return '0';
+                        })
+                      : '0',
+                ),
+                child: const Icon(CupertinoIcons.bell),
+              ),
             ),
           ],
         ),

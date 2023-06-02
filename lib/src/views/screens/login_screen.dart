@@ -94,6 +94,13 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                       footer: const SizedBox(height: 12),
                       children: [
                         CupertinoTextFormFieldRow(
+                          onTap: () {
+                            _scrollController.animateTo(
+                              _scrollController.position.maxScrollExtent,
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeInOut,
+                            );
+                          },
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Username tidak boleh kosong';
@@ -120,6 +127,15 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                             children: [
                               Expanded(
                                 child: CupertinoTextFormFieldRow(
+                                  onTap: () {
+                                    _scrollController.animateTo(
+                                      _scrollController
+                                          .position.maxScrollExtent,
+                                      duration:
+                                          const Duration(milliseconds: 500),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  },
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Kata sandi tidak boleh kosong';
