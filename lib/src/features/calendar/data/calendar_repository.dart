@@ -6,7 +6,6 @@ import 'package:http/io_client.dart';
 
 import '../../../models/event_model.dart';
 import '../../http/provider/http_provider.dart';
-import '../provider/all_events_provider.dart';
 
 final calendarProvider = Provider<CalendarRepository>((ref) {
   final http = ref.watch(httpProvider);

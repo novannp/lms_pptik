@@ -1,13 +1,11 @@
-import 'dart:math';
-
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:lms_pptik/src/extentions/string_extensions.dart';
+import 'package:lms_pptik/src/features/notification/provider/user_notification.dart';
 import 'package:lms_pptik/src/models/user_model.dart';
 import 'package:lms_pptik/src/views/themes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -16,20 +14,48 @@ import 'package:shimmer/shimmer.dart';
 import '../../features/course/provider/enrolled_course_provider.dart';
 import '../../features/course/provider/filter_course.dart';
 import '../../features/course/provider/recent_course_provider.dart';
-import '../../features/notification/provider/notification_provider.dart';
+import '../../features/notification/data/notification_provider.dart';
 import '../../features/user/provider/user_provider.dart';
-import '../../models/course_model.dart';
+import '../components/course_card.dart';
+import '../components/shimmer_widget.dart';
 import '../components/title_widget.dart';
 import 'main_screen.dart';
 
+final filterProvider = StateProvider<String>((ref) {
+  return 'Baru Saja Diakses';
+});
+
 class DashboardScreen extends ConsumerStatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen(this.tabController, {super.key});
+  final CupertinoTabController tabController;
 
   @override
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  final List _items = [
+    {
+      'text': 'Baru Saja Diakses',
+      'value': 'recent',
+    },
+    {
+      'text': 'Semua Kelas',
+      'value': 'all',
+    },
+    {
+      'text': 'Kelas Favorit',
+      'value': 'favourites',
+    },
+    {
+      'text': 'Kelas Lalu',
+      'value': 'past',
+    },
+    {
+      'text': 'Kelas Aktif',
+      'value': 'inprogress',
+    },
+  ];
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
 
@@ -67,205 +93,233 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final user = ref.watch(userProvider);
     final selectedFilter = ref.watch(filterCourseProvider);
     final notified = ref.watch(notifiedProvider);
+    final notif = ref.watch(userNotificationProvider(user.value!.id as int));
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: user.when(data: (data) {
-        // Show notification only one time
-        if (user.value != null) {
-          if (notified) {
-            showWelcomeNotification(data.name!);
-          }
-        }
-        return buildAppBar(data, context);
-      }, error: (error, stacktrace) {
-        return appBarError(context);
-      }, loading: () {
-        return appBarLoading();
-      }),
-      body: SmartRefresher(
-        controller: _refreshController,
-        onRefresh: () async {
-          await Future.delayed(const Duration(seconds: 2), () {
-            ref.refresh(filteredCourseProvider.future);
-            ref.refresh(recentCourseProvider.future);
-            ref.refresh(userProvider.future);
-          });
-
-          _refreshController.refreshCompleted();
-        },
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+    return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.systemGroupedBackground,
+      navigationBar: CupertinoNavigationBar(
+        leading: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 10),
+              child: Row(children: [
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    widget.tabController.index = 3;
+                  },
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(
+                      user.when(
+                        data: (data) {
+                          return data.avatar!;
+                        },
+                        error: (error, stacktrace) {
+                          return 'https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png';
+                        },
+                        loading: () {
+                          return 'https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png';
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Selamat Datang',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    user.when(
+                        data: (data) {
+                          if (notified) {
+                            Future(() {
+                              showWelcomeNotification(data.name!);
+                              ref.watch(notifiedProvider.notifier).state =
+                                  false;
+                            });
+                          }
+                          return Text(
+                            data.name!,
+                            style: CupertinoTheme.of(context)
+                                .textTheme
+                                .navTitleTextStyle
+                                .copyWith(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          );
+                        },
+                        error: (error, stacktrace) {
+                          return const Text('User');
+                        },
+                        loading: () =>
+                            const ShimmerWidget(height: 14, width: 100)),
+                  ],
+                ),
+              ]),
+            ),
+            CupertinoButton(
+              onPressed: () {
+                GoRouter.of(context).pushNamed('notification',
+                    extra: ref.watch(userProvider).value!.id);
+              },
+              child: Builder(builder: (context) {
+                return Badge(
+                    label: Text(
+                      notif.when(data: (data) {
+                        return (data.length.toString());
+                      }, error: (error, stacktrace) {
+                        return '0';
+                      }, loading: () {
+                        return '0';
+                      }),
+                    ),
+                    child: const Icon(CupertinoIcons.bell));
+              }),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.white,
+        transitionBetweenRoutes: true,
+        border: null,
+      ),
+      child: CustomScrollView(slivers: [
+        CupertinoSliverRefreshControl(
+          onRefresh: () {
+            return Future.delayed(const Duration(seconds: 2)).then((value) {
+              ref.refresh(filteredCourseProvider.future);
+              ref.refresh(recentCourseProvider.future);
+              ref.refresh(userProvider.future);
+            });
+          },
+        ),
+        SliverToBoxAdapter(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              buildSearchButton(context),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const TitleWidget(text: 'Kelas Saya'),
-                  buildDropdownFilter(selectedFilter, context),
-                ],
-              ),
-              const SizedBox(height: 12),
-              selectedFilter == 'recent'
-                  ? buildRecentCourses()
-                  : buildCoursesList(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  AppBar buildAppBar(UserModel data, BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      toolbarHeight: 80,
-      leadingWidth: 0,
-      actions: [
-        Row(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(right: 10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () {},
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Icon(
-                    FluentIcons.alert_20_regular,
-                    color: base6,
+              Container(
+                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                color: Colors.white,
+                child: GestureDetector(
+                  onTap: () {
+                    GoRouter.of(context).pushNamed('search');
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 20),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(CupertinoIcons.search, color: Colors.grey),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          'Cari Kelas',
+                          style: TextStyle(color: Colors.grey),
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            InkWell(
-              onTap: () {
-                ref.watch(indexProvider.notifier).state = 3;
-              },
-              child: Container(
-                margin: const EdgeInsets.only(right: 20),
-                child: CircleAvatar(
-                  backgroundImage: NetworkImage(data.avatar!),
+              const SizedBox(height: 12),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.only(
+                    left: 10, right: 12, top: 0, bottom: 0),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const TitleWidget(text: 'Kelas Saya'),
+                        buildDropdownFilter(selectedFilter, context),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    selectedFilter == 'recent'
+                        ? buildRecentCourses()
+                        : buildCoursesList(),
+                  ],
                 ),
               ),
-            ),
-          ],
-        )
-      ],
-      titleTextStyle: const TextStyle(color: Colors.black),
-      title: Padding(
-        padding: const EdgeInsets.only(left: 8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'LMS PPTIK',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall!
-                  .copyWith(fontWeight: FontWeight.bold),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  'Halo, ',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall!
-                      .copyWith(fontWeight: FontWeight.normal),
-                ),
-                const SizedBox(height: 12),
-                Text(data.name ?? '',
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleSmall)
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Container buildSearchButton(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
-      ),
-      child: InkWell(
-        onTap: () {
-          GoRouter.of(context).pushNamed('search');
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: const [
-              Icon(Icons.search),
-              SizedBox(width: 10),
-              Text('Cari kelas'),
             ],
           ),
         ),
-      ),
+      ]),
     );
   }
 
   Widget buildDropdownFilter(String selectedFilter, BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
+        final selectedFilter = ref.watch(filterProvider);
         return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            DropdownButton(
+            CupertinoButton(
               alignment: Alignment.centerRight,
-              value: selectedFilter,
-              underline: Container(),
-              iconSize: 18,
-              hint: const Text('Baru saja diakses'),
-              style: Theme.of(context).textTheme.titleSmall,
-              elevation: 0,
-              icon: const Icon(FluentIcons.chevron_down_20_regular),
-              isDense: true,
-              items: const [
-                DropdownMenuItem(
-                  value: 'recent',
-                  child: Text('Baru saja diakses'),
-                ),
-                DropdownMenuItem(
-                  value: 'all',
-                  child: Text('Semua kelas'),
-                ),
-                DropdownMenuItem(
-                  value: 'inprogress',
-                  child: Text('Dalam proses'),
-                ),
-                DropdownMenuItem(
-                  value: 'past',
-                  child: Text('Kelas lalu'),
-                ),
-                DropdownMenuItem(
-                  value: 'favourites',
-                  child: Text('Kelas Favorit'),
-                ),
-              ],
-              onChanged: (value) {
-                ref.watch(filterCourseProvider.notifier).state =
-                    value.toString();
-                ref.refresh(filteredCourseProvider);
+              onPressed: () {
+                showCupertinoModalPopup(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return CupertinoActionSheet(
+                      cancelButton: CupertinoActionSheetAction(
+                        isDestructiveAction: true,
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Batal'),
+                      ),
+                      actions: _items
+                          .map(
+                            (e) => CupertinoActionSheetAction(
+                              onPressed: () {
+                                ref.read(filterProvider.notifier).state =
+                                    e['text'];
+                                Future.delayed(
+                                  const Duration(milliseconds: 500),
+                                  () {
+                                    ref
+                                        .watch(filterCourseProvider.notifier)
+                                        .state = e['value'];
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
+                              child: Text(
+                                e['text'],
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    );
+                  },
+                );
               },
+              child: Text(selectedFilter),
+            ),
+            Icon(
+              CupertinoIcons.chevron_down,
+              size: 14,
+              color: base6,
             ),
           ],
         );
@@ -297,11 +351,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.subtitles_off_outlined,
+                                CupertinoIcons.xmark_circle_fill,
                                 size: 60,
                                 color: Colors.grey.shade300,
                               ),
-                              const Text('Kelas tidak ada')
+                              const Text(
+                                'Kelas tidak ada',
+                                style:
+                                    TextStyle(color: Colors.grey, fontSize: 14),
+                              ),
                             ],
                           ),
                         ),
@@ -480,233 +538,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
               ),
             )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-AppBar appBarError(BuildContext context) {
-  return AppBar(
-    actions: [
-      Row(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(right: 10),
-            decoration: BoxDecoration(
-              border: Border.all(
-                width: 1,
-                color: borderColor,
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () {},
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  FluentIcons.alert_24_regular,
-                  color: base6,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.grey.shade300,
-            ),
-          ),
-        ],
-      )
-    ],
-    elevation: 0,
-    toolbarHeight: 80,
-    title: Padding(
-      padding: const EdgeInsets.only(left: 8.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'LMS PPTIK',
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall!
-                .copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 3),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                'Halo, ',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall!
-                    .copyWith(fontWeight: FontWeight.normal),
-              ),
-              const SizedBox(height: 12),
-              Text('',
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall)
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class ShimmerWidget extends StatelessWidget {
-  const ShimmerWidget({
-    super.key,
-    required this.height,
-    required this.width,
-  });
-  final double height;
-  final double width;
-  @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade400,
-      highlightColor: Colors.grey.shade300,
-      child: Container(
-        height: height,
-        width: width,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.grey.shade400,
-        ),
-      ),
-    );
-  }
-}
-
-class CourseCard extends StatelessWidget {
-  CourseCard({super.key, required this.course, this.onTap});
-
-  final CourseModel course;
-  Function()? onTap;
-  @override
-  Widget build(BuildContext context) {
-    final _random = Random();
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        width: MediaQuery.of(context).size.width - 40,
-        height: 100,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: flatColor[_random.nextInt(8)],
-        ),
-        child: Stack(
-          children: [
-            Align(
-              alignment: Alignment.bottomRight,
-              child: SvgPicture.asset(
-                width: 120,
-                fit: BoxFit.fitHeight,
-                alignment: Alignment.bottomRight,
-                'assets/images/course_bg.svg',
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${course.fullname.toString().decodeHtml()} (${course.shortname})' ??
-                            course.fullname.toString().decodeHtml(),
-                        style:
-                            Theme.of(context).textTheme.titleMedium!.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
-                      Text(
-                        course.coursecategory.toString().decodeHtml(),
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall!
-                            .copyWith(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                  course.progress != null ? const Spacer() : SizedBox(),
-                  if (course.contact != null)
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          child: Icon(FluentIcons.person_20_regular,
-                              color: Colors.white, size: 20),
-                        ),
-                        const SizedBox(width: 10),
-                        Builder(builder: (context) {
-                          if (course.contact!.isEmpty) {
-                            return Text(
-                              'Tidak ada nama pengajar',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium!
-                                  .copyWith(color: Colors.white),
-                            );
-                          }
-                          return Row(
-                            children: course.contact!
-                                .map(
-                                  (e) => Text(
-                                    ' ${e['fullname'].toString().decodeHtml()} |',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelMedium!
-                                        .copyWith(color: Colors.white),
-                                  ),
-                                )
-                                .toList(),
-                          );
-                        })
-                      ],
-                    )
-                  else
-                    SizedBox(),
-                  course.progress != null
-                      ? Row(
-                          children: [
-                            SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                backgroundColor: Colors.black.withOpacity(0.2),
-                                color: Colors.white,
-                                value: course.progress! / 100,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              '${course.progress}% Selesai',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium!
-                                  .copyWith(color: Colors.white),
-                            )
-                          ],
-                        )
-                      : SizedBox()
-                ],
-              ),
-            ),
           ],
         ),
       ),

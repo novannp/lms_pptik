@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 class CourseModel {
   final int? id;
   final String? fullname;

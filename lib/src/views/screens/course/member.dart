@@ -8,27 +8,52 @@ class Member extends ConsumerWidget {
     final userList = ref.watch(enrolledCourseUsersProvider(courseId));
     return userList.when(data: (data) {
       return ListView.builder(
+          padding: const EdgeInsets.only(top: 10),
+          shrinkWrap: true,
           physics: const BouncingScrollPhysics(),
           itemBuilder: (context, index) {
-            return ListTile(
+            return CupertinoListTile(
+              additionalInfo: Text(
+                data[index].city ?? '-',
+                style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
+                    ),
+              ),
               onTap: () {},
+              leadingSize: 44,
+              padding: const EdgeInsets.all(0),
               leading: CircleAvatar(
                 backgroundImage: NetworkImage(data[index].avatar.toString()),
               ),
-              title: Text(data[index].name.toString()),
+              title: Text(
+                data[index].name.toString(),
+                style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+              ),
               subtitle: Text.rich(
                 TextSpan(
                     text: 'Terakhir akses: ',
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelMedium!
-                        .copyWith(fontWeight: FontWeight.bold),
+                    style:
+                        CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
                     children: [
                       TextSpan(
                           text: DateTime.fromMillisecondsSinceEpoch(
                                   data[index].lastCourseAccess! * 1000)
                               .formatDate(),
-                          style: Theme.of(context).textTheme.labelMedium)
+                          style: CupertinoTheme.of(context)
+                              .textTheme
+                              .textStyle
+                              .copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                              ))
                     ]),
               ),
             );

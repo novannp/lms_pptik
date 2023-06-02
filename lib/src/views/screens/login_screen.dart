@@ -1,15 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lms_pptik/src/features/auth/data/auth_repository.dart';
-import 'package:lms_pptik/src/views/themes.dart';
-import 'package:riverpod_lint/riverpod_lint.dart';
 
 import '../../features/auth/provider/auth_notifier.dart';
 import '../components/loading_widget.dart';
 
 final obsecureProvider = StateProvider.autoDispose<bool>((ref) {
-  return false;
+  return true;
 });
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -20,6 +18,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class LoginScreenState extends ConsumerState<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   late TextEditingController _usernameController;
   late TextEditingController _passwordController;
   late ScrollController _scrollController;
@@ -43,153 +42,166 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authNotifierProvider.notifier);
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
+    return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.white,
+      child: SafeArea(
         child: SingleChildScrollView(
           controller: _scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Image.asset('assets/images/login.png'),
-              const SizedBox(height: 40),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Form(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Masuk',
-                        style: poppins.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24,
-                        ),
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CupertinoFormSection(
+                      clipBehavior: Clip.antiAlias,
+                      backgroundColor: Colors.transparent,
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      // backgroundColor: Colors.transparent,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
                       ),
-                      const SizedBox(height: 24),
-                      TextFormField(
-                        enableSuggestions: true,
-                        autocorrect: true,
-                        onTap: () {
-                          // Scroll to the bottom of the screen when TextFormField is tapped
-                          _scrollController.animateTo(
-                            _scrollController.position.maxScrollExtent,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        controller: _usernameController,
-                        cursorColor: Colors.black,
-                        style: poppins.copyWith(fontSize: 12),
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: blueForm,
-                          hintText: 'Masukkan username',
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        onTap: () {
-                          // Scroll to the bottom of the screen when TextFormField is tapped
-                          _scrollController.animateTo(
-                            _scrollController.position.maxScrollExtent,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        controller: _passwordController,
-                        cursorColor: Colors.black,
-                        style: poppins.copyWith(fontSize: 12),
-                        keyboardType: TextInputType.emailAddress,
-                        obscureText: ref.watch(obsecureProvider),
-                        decoration: InputDecoration(
-                          suffixIcon: GestureDetector(
-                            onTap: () {
-                              ref.watch(obsecureProvider.notifier).state =
-                                  !ref.watch(obsecureProvider.notifier).state;
-                            },
-                            child: const Icon(
-                              Icons.visibility_outlined,
-                              color: Color(0xffaaaaaa),
-                            ),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: blueForm,
-                          hintText: 'Masukkan kata sandi',
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                            onPressed: () {},
-                            child: Text(
-                              'Lupa Kata Sandi?',
-                              style: poppins.copyWith(
-                                fontSize: 12,
-                                color: kPrimaryColor,
-                              ),
-                            )),
-                      ),
-                      const SizedBox(height: 32),
-                      SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: kPrimaryColor,
-                            ),
-                            onPressed: () async {
-                              await auth.login(_usernameController.text,
-                                  _passwordController.text);
-                              if (auth.message == 'success') {
-                                GoRouter.of(context)
-                                    .pushReplacementNamed('main');
-                              } else {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  duration: const Duration(seconds: 1),
-                                  behavior: SnackBarBehavior.floating,
-                                  showCloseIcon: true,
-                                  backgroundColor: Colors.red,
-                                  content: Text(auth.message.toString()),
-                                ));
-                              }
-                            },
-                            child: ref.watch(loadingStateProvider)
-                                ? Loading(
-                                    color: Colors.white,
-                                  )
-                                : Text('Masuk'),
-                          )),
-                      const SizedBox(height: 32),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      header: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Belum punya akun?',
-                            style: poppins.copyWith(fontSize: 12),
+                            'Masuk',
+                            style: CupertinoTheme.of(context)
+                                .textTheme
+                                .navTitleTextStyle
+                                .copyWith(color: Colors.black, fontSize: 24),
                           ),
                           Text(
-                            ' Daftar',
-                            style: poppins.copyWith(
-                              fontSize: 12,
-                              color: kPrimaryColor,
-                            ),
-                          )
+                            'Silahkan masuk menggunakan akun LMS PPTIK',
+                            style: CupertinoTheme.of(context)
+                                .textTheme
+                                .textStyle
+                                .copyWith(color: Colors.black),
+                          ),
+                          SizedBox(height: 12),
                         ],
-                      )
-                    ],
-                  ),
+                      ),
+                      footer: const SizedBox(height: 12),
+                      children: [
+                        CupertinoTextFormFieldRow(
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Username tidak boleh kosong';
+                            }
+                            return null;
+                          },
+                          textInputAction: TextInputAction.next,
+                          enableSuggestions: true,
+                          enableInteractiveSelection: true,
+                          maxLines: 1,
+                          keyboardType: TextInputType.text,
+                          placeholder: 'Masukkan username',
+                          prefix: const Icon(CupertinoIcons.person),
+                          controller: _usernameController,
+                          style: CupertinoTheme.of(context)
+                              .textTheme
+                              .textStyle
+                              .copyWith(color: Colors.black),
+                        ),
+                        CupertinoFormRow(
+                          padding: const EdgeInsets.all(0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: CupertinoTextFormFieldRow(
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Kata sandi tidak boleh kosong';
+                                    } else if (value.length < 8) {
+                                      return 'Kata sandi minimal 8 karakter';
+                                    }
+                                    return null;
+                                  },
+                                  enableSuggestions: true,
+                                  enableInteractiveSelection: true,
+                                  maxLines: 1,
+                                  keyboardType: TextInputType.text,
+                                  placeholder: 'Masukkan kata sandi',
+                                  prefix: const Icon(CupertinoIcons.lock),
+                                  controller: _passwordController,
+                                  style: CupertinoTheme.of(context)
+                                      .textTheme
+                                      .textStyle
+                                      .copyWith(color: Colors.black),
+                                  obscureText: ref.watch(obsecureProvider),
+                                  textInputAction: TextInputAction.done,
+                                ),
+                              ),
+                              CupertinoButton(
+                                onPressed: () {
+                                  ref.watch(obsecureProvider.notifier).state =
+                                      !ref.watch(obsecureProvider);
+                                },
+                                child: ref.watch(obsecureProvider)
+                                    ? const Icon(CupertinoIcons.eye_slash_fill)
+                                    : const Icon(CupertinoIcons.eye),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      width: MediaQuery.of(context).size.width,
+                      child: CupertinoButton.filled(
+                        child: ref.watch(loadingStateProvider)
+                            ? CupertinoActivityIndicator(
+                                color: Colors.white,
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text('Masuk'),
+                                ],
+                              ),
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            auth
+                                .login(_usernameController.text,
+                                    _passwordController.text)
+                                .then(
+                              (value) {
+                                if (value == 'success') {
+                                  GoRouter.of(context)
+                                      .pushReplacementNamed('main');
+                                } else {
+                                  showCupertinoDialog(
+                                    barrierDismissible: true,
+                                    context: context,
+                                    builder: (context) {
+                                      return CupertinoAlertDialog(
+                                        title: const Text('Gagal masuk !'),
+                                        content: Text(
+                                          auth.message.toString(),
+                                          style: CupertinoTheme.of(context)
+                                              .textTheme
+                                              .textStyle,
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
                 ),
               )
             ],

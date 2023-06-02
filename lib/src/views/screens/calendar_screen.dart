@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lms_pptik/src/extentions/int_extensions.dart';
@@ -84,34 +85,45 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final events = ref.watch(allEventProvider);
-    return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        icon: const Icon(Icons.add),
-        label: const Text('Tambah Acara'),
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Calendar'),
       ),
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.black),
-        titleTextStyle: Theme.of(context).textTheme.titleSmall,
-        title: const Text('Kalender Acara'),
-      ),
-      body: events.when(
+      child: events.when(
         data: (data) {
-          return SfCalendar(
-            controller: _calendarController,
-            dataSource: EventsDataSource(data),
-            view: CalendarView.schedule,
-            initialDisplayDate: DateTime.now(),
-            showDatePickerButton: true,
-            monthViewSettings: const MonthViewSettings(
-                appointmentDisplayMode:
-                    MonthAppointmentDisplayMode.appointment),
-            scheduleViewMonthHeaderBuilder: scheduleHeaderViewBuilder,
-            scheduleViewSettings: ScheduleViewSettings(
-              appointmentTextStyle:
-                  Theme.of(context).textTheme.labelLarge!.copyWith(
-                        color: Colors.white,
-                      ),
+          return SafeArea(
+            child: SfCalendar(
+              cellEndPadding: 5,
+              allowAppointmentResize: true,
+              allowedViews: const [
+                CalendarView.schedule,
+                CalendarView.month,
+              ],
+              headerHeight: 60,
+              onTap: (detail) {},
+              headerStyle: CalendarHeaderStyle(
+                  backgroundColor:
+                      CupertinoTheme.of(context).barBackgroundColor,
+                  textStyle: CupertinoTheme.of(context)
+                      .textTheme
+                      .textStyle
+                      .copyWith(fontSize: 18)),
+              controller: _calendarController,
+              dataSource: EventsDataSource(data),
+              view: CalendarView.month,
+              initialDisplayDate: DateTime.now(),
+              showDatePickerButton: true,
+              showCurrentTimeIndicator: true,
+              monthViewSettings: const MonthViewSettings(
+                  appointmentDisplayMode:
+                      MonthAppointmentDisplayMode.appointment),
+              scheduleViewMonthHeaderBuilder: scheduleHeaderViewBuilder,
+              scheduleViewSettings: ScheduleViewSettings(
+                appointmentTextStyle:
+                    CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                          color: Colors.white,
+                        ),
+              ),
             ),
           );
         },
@@ -155,10 +167,5 @@ class EventsDataSource extends CalendarDataSource {
   @override
   String getSubject(int index) {
     return appointments![index].name;
-  }
-
-  @override
-  bool isAllDay(int index) {
-    return appointments![index].sequence == 1 ? false : true;
   }
 }

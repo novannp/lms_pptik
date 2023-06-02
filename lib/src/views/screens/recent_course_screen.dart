@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/course/provider/recent_course_provider.dart';
-import 'dashboard_screen.dart';
+import '../components/course_card.dart';
 
 class RecentCourseScreen extends ConsumerWidget {
   const RecentCourseScreen({super.key});

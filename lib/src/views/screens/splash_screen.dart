@@ -25,8 +25,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         } else {
           ref
               .watch(authNotifierProvider.notifier)
-              .login(value['username'], value['password']);
-          GoRouter.of(context).pushReplacementNamed(AppRoutes.main);
+              .login(value['username'], value['password'])
+              .then((value) {
+            GoRouter.of(context).pushReplacementNamed(AppRoutes.main);
+          });
         }
       });
     });

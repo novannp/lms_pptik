@@ -5,7 +5,7 @@ import 'package:lms_pptik/src/features/auth/data/auth_repository.dart';
 import 'package:lms_pptik/src/features/user/provider/user_provider.dart';
 import 'package:lms_pptik/src/views/screens/main_screen.dart';
 
-import '../../notification/provider/notification_provider.dart';
+import '../../notification/data/notification_provider.dart';
 import '../../storage/provider/storage_provider.dart';
 import '../../storage/service/secure_storage_service.dart';
 
@@ -36,11 +36,13 @@ class AuthNotifier extends StateNotifier<String> {
         message = 'success';
         return message;
       } else {
-        message = 'Login tidak valid, silahkan coba lagi';
+        message = 'Akun tidak valid, silahkan coba lagi';
         return message;
       }
     } on SocketException {
-      message = 'Periksa koneksi internet';
+      message = 'Silahkan periksa koneksi internet';
+
+      ref.watch(loadingStateProvider.notifier).state = false;
       return message;
     }
   }

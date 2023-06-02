@@ -1,14 +1,10 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lms_pptik/src/features/user/provider/user_provider.dart';
-import 'package:lms_pptik/src/views/screens/notification_screen.dart';
+import 'package:lms_pptik/src/views/screens/badge_screen.dart';
+import 'package:lms_pptik/src/views/screens/notification/notification_screen.dart';
 import 'package:lms_pptik/src/views/screens/profile_screen.dart';
-import 'package:lms_pptik/src/views/themes.dart';
 
-import '../../features/storage/provider/storage_provider.dart';
 import 'calendar_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -24,9 +20,11 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class MainScreenState extends ConsumerState<MainScreen> {
+  late CupertinoTabController _tabController;
   AwesomeNotifications awesomeNotifications = AwesomeNotifications();
   @override
   void initState() {
+    _tabController = CupertinoTabController();
     awesomeNotifications.isNotificationAllowed().then((isAllowed) {
       if (!isAllowed) {
         AwesomeNotifications().requestPermissionToSendNotifications();
@@ -38,49 +36,47 @@ class MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        currentIndex: ref.watch(indexProvider),
-        selectedItemColor: kPrimaryColor,
-        unselectedItemColor: Colors.black,
-        elevation: 0,
-        onTap: (value) {
-          ref.watch(indexProvider.notifier).state = value;
-        },
+    return CupertinoTabScaffold(
+      controller: _tabController,
+      tabBar: CupertinoTabBar(
+        iconSize: 24,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(FluentIcons.glance_12_regular),
+            icon: Icon(CupertinoIcons.home),
             label: 'Dashboard',
-            activeIcon: Icon(FluentIcons.glance_12_filled),
+            // activeIcon: Icon(FluentIcons.glance_12_filled),
           ),
           BottomNavigationBarItem(
-            icon: Icon(FluentIcons.calendar_rtl_12_regular),
+            icon: Icon(CupertinoIcons.calendar),
             label: 'Kalender',
-            activeIcon: Icon(FluentIcons.calendar_rtl_12_filled),
+            // activeIcon: Icon(FluentIcons.calendar_rtl_12_filled),
           ),
           BottomNavigationBarItem(
-            icon: Icon(FluentIcons.shield_12_regular),
+            icon: Icon(CupertinoIcons.checkmark_seal),
             label: 'Lencana',
-            activeIcon: Icon(FluentIcons.shield_12_filled),
+            // activeIcon: Icon(FluentIcons.shield_12_filled),
           ),
           BottomNavigationBarItem(
-            icon: Icon(FluentIcons.person_12_regular),
+            icon: Icon(CupertinoIcons.person),
             label: 'Profil',
-            activeIcon: Icon(FluentIcons.person_12_filled),
+            // activeIcon: Icon(FluentIcons.person_12_filled),
           ),
         ],
       ),
-      body: IndexedStack(
-        index: ref.watch(indexProvider),
-        children: const [
-          DashboardScreen(),
-          CalendarScreen(),
-          NotificationScreen(),
-          ProfileScreen(),
-        ],
-      ),
+      tabBuilder: (context, index) {
+        switch (index) {
+          case 0:
+            return DashboardScreen(_tabController);
+          case 1:
+            return const CalendarScreen();
+          case 2:
+            return const BadgeScreen();
+          case 3:
+            return const ProfileScreen();
+          default:
+            return DashboardScreen(_tabController);
+        }
+      },
     );
   }
 }
