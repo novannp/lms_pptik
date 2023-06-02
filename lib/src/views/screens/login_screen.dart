@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/provider/auth_notifier.dart';
@@ -48,13 +49,18 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
         child: SingleChildScrollView(
           controller: _scrollController,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.asset('assets/images/login.png'),
+              const SizedBox(height: 20),
+              SvgPicture.asset(
+                'assets/images/login.svg',
+                height: MediaQuery.of(context).size.height * 0.3,
+                width: MediaQuery.of(context).size.width,
+              ),
               Form(
                 key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CupertinoFormSection(
                       clipBehavior: Clip.antiAlias,
@@ -82,7 +88,7 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                                 .textStyle
                                 .copyWith(color: Colors.black),
                           ),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                         ],
                       ),
                       footer: const SizedBox(height: 12),
@@ -157,14 +163,14 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                       width: MediaQuery.of(context).size.width,
                       child: CupertinoButton.filled(
                         child: ref.watch(loadingStateProvider)
-                            ? CupertinoActivityIndicator(
+                            ? const CupertinoActivityIndicator(
                                 color: Colors.white,
                               )
-                            : Row(
+                            : const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  const Text('Masuk'),
+                                  Text('Masuk'),
                                 ],
                               ),
                         onPressed: () {
