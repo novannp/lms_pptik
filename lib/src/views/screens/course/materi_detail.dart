@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:lms_pptik/src/extentions/string_extensions.dart';
 
 import '../../../models/module.dart';
@@ -23,12 +23,8 @@ class MateriDetailScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              HtmlWidget(
-                data.summary!,
-                textStyle: CupertinoTheme.of(context)
-                    .textTheme
-                    .textStyle
-                    .copyWith(color: Colors.black),
+              Html(
+                data: data.summary!,
               ),
               ListView.builder(
                 shrinkWrap: true,

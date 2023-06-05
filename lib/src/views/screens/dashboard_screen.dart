@@ -1,25 +1,21 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:lms_pptik/src/features/notification/provider/user_notification.dart';
-import 'package:lms_pptik/src/models/user_model.dart';
 import 'package:lms_pptik/src/views/themes.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../features/course/provider/enrolled_course_provider.dart';
 import '../../features/course/provider/filter_course.dart';
 import '../../features/course/provider/recent_course_provider.dart';
+import '../../features/notification/data/notification_plugin.dart';
 import '../../features/notification/data/notification_provider.dart';
 import '../../features/user/provider/user_provider.dart';
 import '../components/course_card.dart';
 import '../components/shimmer_widget.dart';
 import '../components/title_widget.dart';
-import 'main_screen.dart';
 
 final filterProvider = StateProvider<String>((ref) {
   return 'Baru Saja Diakses';
@@ -55,9 +51,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       'text': 'Kelas Aktif',
       'value': 'inprogress',
     },
+    {
+      'text': 'Disembunyikan',
+      'value': 'hidden',
+    },
   ];
-  final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
 
   void playWelcomeAudio() async {
     final player = AudioPlayer();
@@ -68,24 +66,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    // playWelcomeAudio();
-  }
 
-  showWelcomeNotification(String name) {
-    AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        category: NotificationCategory.Email,
-        ticker: 'Welcome',
-        id: 10,
-        channelKey: 'welcome',
-        title: 'Hallo! $name',
-        body: 'Selamat datang di LMS PPTIK',
-      ),
-    );
-    Future(() {
-      final notifierdNotifier = ref.watch(notifiedProvider.notifier);
-      notifierdNotifier.state = false;
-    });
+    // playWelcomeAudio();
   }
 
   @override
@@ -96,6 +78,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final notification = user.value?.id != null
         ? ref.watch(userNotificationProvider(user.value!.id as int))
         : null;
+    final notificationPlugin = ref.watch(notificationPluginProvider);
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGroupedBackground,
@@ -143,7 +126,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         data: (data) {
                           if (notified) {
                             Future(() {
-                              showWelcomeNotification(data.name!);
+                              notificationPlugin.showWelcomeNotification(
+                                  user.value?.name ?? '');
                               ref.watch(notifiedProvider.notifier).state =
                                   false;
                             });
@@ -232,7 +216,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         Text(
                           'Cari Kelas',
                           style: TextStyle(color: Colors.grey),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -369,19 +353,59 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       )
                     : Column(
                         children: [
-                          ListView.builder(
+                          const Text('Tahan kartu untuk membuka menu lainnya'),
+                          const SizedBox(height: 10),
+                          ListView.separated(
+                            separatorBuilder: (context, index) {
+                              return const SizedBox(height: 10);
+                            },
                             primary: false,
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: data.length,
                             itemBuilder: (context, index) {
-                              return CourseCard(
-                                course: data[index],
-                                onTap: () {
-                                  GoRouter.of(context).pushNamed(
-                                      'course_detail',
-                                      extra: data[index]);
-                                },
+                              return CupertinoContextMenu(
+                                enableHapticFeedback: true,
+                                actions: [
+                                  CupertinoContextMenuAction(
+                                    trailingIcon: !data[index].isfavourite!
+                                        ? CupertinoIcons.heart
+                                        : CupertinoIcons.heart_fill,
+                                    child: Text(
+                                      !data[index].isfavourite!
+                                          ? 'Tambahkan ke Favorit'
+                                          : 'Hapus dari Favorit',
+                                      style: CupertinoTheme.of(context)
+                                          .textTheme
+                                          .textStyle
+                                          .copyWith(fontSize: 14),
+                                    ),
+                                    onPressed: () {},
+                                  ),
+                                  CupertinoContextMenuAction(
+                                    trailingIcon: !data[index].hidden!
+                                        ? CupertinoIcons.eye_slash
+                                        : CupertinoIcons.eye,
+                                    child: Text(
+                                      data[index].hidden!
+                                          ? 'Tampilkan kelas'
+                                          : 'Sembunyikan kelas',
+                                      style: CupertinoTheme.of(context)
+                                          .textTheme
+                                          .textStyle
+                                          .copyWith(fontSize: 14),
+                                    ),
+                                    onPressed: () {},
+                                  ),
+                                ],
+                                child: CourseCard(
+                                  course: data[index],
+                                  onTap: () {
+                                    GoRouter.of(context).pushNamed(
+                                        'course_detail',
+                                        extra: data[index]);
+                                  },
+                                ),
                               );
                             },
                           ),
@@ -442,7 +466,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   )
                 : Column(
                     children: [
-                      ListView.builder(
+                      const Text('Tahan kartu untuk membuka menu lainnya'),
+                      const SizedBox(height: 10),
+                      ListView.separated(
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(height: 10);
+                        },
                         primary: false,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),

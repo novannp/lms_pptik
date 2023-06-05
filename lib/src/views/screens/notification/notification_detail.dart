@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:lms_pptik/src/extentions/int_extensions.dart';
 import 'package:lms_pptik/src/extentions/string_extensions.dart';
 
@@ -28,7 +28,7 @@ class NotificationDetailScreen extends ConsumerWidget {
                 : const Icon(
                     CupertinoIcons.bell_circle,
                   ),
-            title: Text(notificationModel.subject!),
+            title: Text(notificationModel.subject ?? 'Tanpa subjek'),
             subtitle: Text(notificationModel.timecreated!
                 .toDate()
                 .toString()
@@ -39,22 +39,9 @@ class NotificationDetailScreen extends ConsumerWidget {
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: HtmlWidget(
-                  notificationModel.fullmessagehtml!,
-                  customStylesBuilder: (element) {
-                    if (element.localName == "hr") {
-                      return {
-                        'border': '.5px solid #eeeeee',
-                        'margin': '20px 0px'
-                      };
-                    } else {
-                      return {};
-                    }
-                  },
-                  textStyle: CupertinoTheme.of(context).textTheme.textStyle,
-                  onTapUrl: (value) {
-                    return false;
-                  },
+                child: Html(
+                  data: notificationModel.fullmessagehtml ??
+                      notificationModel.text,
                 ),
               ),
             ),

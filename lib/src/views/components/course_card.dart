@@ -1,30 +1,25 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lms_pptik/src/extentions/string_extensions.dart';
 
 import '../../models/course_model.dart';
-import '../themes.dart';
 
 class CourseCard extends StatelessWidget {
-  CourseCard({super.key, required this.course, this.onTap});
+  const CourseCard({super.key, required this.course, this.onTap});
 
   final CourseModel course;
-  Function()? onTap;
+  final Function()? onTap;
   @override
   Widget build(BuildContext context) {
-    final random = Random();
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
         width: MediaQuery.of(context).size.width - 40,
         height: 100,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: flatColor[random.nextInt(8)],
+          color: course.color,
         ),
         child: Stack(
           children: [

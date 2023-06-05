@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lms_pptik/src/extentions/string_extensions.dart';
@@ -22,7 +21,7 @@ class NotificationScreen extends ConsumerWidget {
       ),
       child: notifications.when(data: (data) {
         return ListView.separated(
-          separatorBuilder: (context, index) => Container(
+          separatorBuilder: (context, index) => SizedBox(
             width: MediaQuery.of(context).size.width,
             height: 1,
           ),
@@ -37,7 +36,7 @@ class NotificationScreen extends ConsumerWidget {
                 );
               },
               backgroundColor: CupertinoColors.systemBackground,
-              title: Text(data[index].subject!),
+              title: Text(data[index].subject ?? 'Tanpa subjek'),
               subtitle: Text(
                   data[index].timecreated!.toDate().toString().formatDate()),
               //type assign or insight
@@ -64,7 +63,7 @@ class NotificationScreen extends ConsumerWidget {
           child: Text(error.toString()),
         );
       }, loading: () {
-        return Loading();
+        return const Loading();
       }),
     );
   }

@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
+
 class CourseModel {
+  final Color? color;
   final int? id;
   final String? fullname;
   final String? shortname;
@@ -24,6 +27,7 @@ class CourseModel {
 
   CourseModel({
     required this.id,
+    required this.color,
     required this.fullname,
     required this.shortname,
     required this.idnumber,
@@ -47,7 +51,9 @@ class CourseModel {
     required this.contact,
   });
 
-  factory CourseModel.fromJson(Map<String, dynamic> json) => CourseModel(
+  factory CourseModel.fromJson(Map<String, dynamic> json, Color color) =>
+      CourseModel(
+        color: color,
         id: json["id"],
         fullname: json["fullname"],
         shortname: json["shortname"],

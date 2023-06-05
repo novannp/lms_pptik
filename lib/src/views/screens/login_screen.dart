@@ -5,7 +5,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/provider/auth_notifier.dart';
-import '../components/loading_widget.dart';
 
 final obsecureProvider = StateProvider.autoDispose<bool>((ref) {
   return true;

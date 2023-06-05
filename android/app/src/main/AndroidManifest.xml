@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.lms_pptik">
+    package="com.pptik.lms">
    <uses-permission android:name="android.permission.INTERNET"/>
-   
+   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
    <application
         android:label="LMS PPTIK"
         android:name="${applicationName}"
@@ -32,5 +32,8 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+          android:name="com.google.firebase.messaging.default_notification_icon"
+          android:resource="@drawable/app_icon" />
     </application>
 </manifest>

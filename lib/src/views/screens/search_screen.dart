@@ -77,7 +77,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       child: Text('Gagal melakukan pencarian'),
                     );
                   },
-                  loading: () => Loading())
+                  loading: () => const Loading())
             ],
           ),
         ),

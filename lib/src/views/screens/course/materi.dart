@@ -41,6 +41,6 @@ class Materi extends ConsumerWidget {
         error: (error, stackTrace) {
           return Text(error.toString());
         },
-        loading: () => Loading());
+        loading: () => const Loading());
   }
 }

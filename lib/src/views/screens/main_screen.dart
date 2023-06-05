@@ -1,8 +1,8 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lms_pptik/src/views/screens/badge_screen.dart';
-import 'package:lms_pptik/src/views/screens/notification/notification_screen.dart';
+import 'package:lms_pptik/src/views/screens/chat/chat_screen.dart';
 import 'package:lms_pptik/src/views/screens/profile_screen.dart';
 
 import 'calendar_screen.dart';
@@ -21,15 +21,11 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class MainScreenState extends ConsumerState<MainScreen> {
   late CupertinoTabController _tabController;
-  AwesomeNotifications awesomeNotifications = AwesomeNotifications();
+
   @override
   void initState() {
     _tabController = CupertinoTabController();
-    awesomeNotifications.isNotificationAllowed().then((isAllowed) {
-      if (!isAllowed) {
-        AwesomeNotifications().requestPermissionToSendNotifications();
-      }
-    });
+    FirebaseMessaging.onMessage.listen((event) {});
 
     super.initState();
   }
@@ -45,6 +41,11 @@ class MainScreenState extends ConsumerState<MainScreen> {
             icon: Icon(CupertinoIcons.home),
             label: 'Dashboard',
             // activeIcon: Icon(FluentIcons.glance_12_filled),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.chat_bubble_2),
+            label: 'Obrolan',
+            // activeIcon: Icon(FluentIcons.calendar_rtl_12_filled),
           ),
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.calendar),
@@ -68,10 +69,12 @@ class MainScreenState extends ConsumerState<MainScreen> {
           case 0:
             return DashboardScreen(_tabController);
           case 1:
-            return const CalendarScreen();
+            return const ChatScreen();
           case 2:
-            return const BadgeScreen();
+            return const CalendarScreen();
           case 3:
+            return const BadgeScreen();
+          case 4:
             return const ProfileScreen();
           default:
             return DashboardScreen(_tabController);

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1057662721862",
+    "project_id": "lms-pptik",
+    "storage_bucket": "lms-pptik.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057662721862:android:17dbb1c46bb155bbf00f47",
+        "android_client_info": {
+          "package_name": "com.pptik.lms"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1057662721862-p6lhmcn4tng7h59dcbkq2bmiacpq0a9a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwu2UwoDQ90RQIZouNSZDTdZFSIBYuc48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1057662721862-p6lhmcn4tng7h59dcbkq2bmiacpq0a9a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

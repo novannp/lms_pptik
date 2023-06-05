@@ -15,14 +15,8 @@ class ProfileScreen extends ConsumerWidget {
     final user = ref.watch(userProvider);
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGroupedBackground,
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text('Profile'),
-        // edit profile
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () {},
-          child: const Icon(CupertinoIcons.pencil_circle),
-        ),
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Profile'),
       ),
       child: SafeArea(
         child: Padding(
@@ -82,11 +76,28 @@ class ProfileScreen extends ConsumerWidget {
                 error: (error, stackTrace) {
                   return Container();
                 },
-                loading: () => Loading(),
+                loading: () => const Loading(),
               ),
               CupertinoListSection.insetGrouped(
                 hasLeading: true,
                 children: [
+                  CupertinoListTile(
+                    onTap: () {},
+                    leading: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: CupertinoColors.systemIndigo,
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.person,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    title: const Text('Edit Profil'),
+                    trailing: const Icon(Icons.chevron_right),
+                  ),
                   CupertinoListTile(
                     onTap: () {},
                     leading: Container(
@@ -136,6 +147,25 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ),
                     title: const Text('Nilai'),
+                    trailing: const Icon(Icons.chevron_right),
+                  ),
+                  CupertinoListTile(
+                    onTap: () {
+                      GoRouter.of(context).pushNamed('settings');
+                    },
+                    leading: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: CupertinoColors.black,
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.settings,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    title: const Text('Pengaturan'),
                     trailing: const Icon(Icons.chevron_right),
                   ),
                   CupertinoListTile(

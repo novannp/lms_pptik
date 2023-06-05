@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/io_client.dart';
@@ -7,6 +6,7 @@ import 'package:lms_pptik/src/features/http/provider/http_provider.dart';
 import 'package:lms_pptik/src/features/storage/service/secure_storage_service.dart';
 
 import '../../../models/user_model.dart';
+import '../../../utills/endpoints.dart';
 import '../../storage/provider/storage_provider.dart';
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
@@ -24,10 +24,17 @@ class UserRepository {
     String baseUrl =
         "https://lms.pptik.id/webservice/rest/server.php/?wstoken=$token&wsfunction=core_user_get_users_by_field&moodlewsrestformat=json&field=username&values[]=$username";
 
-    Uri url = Uri.parse(baseUrl);
+    Uri url = Uri.https(Endpoints.baseUrl, Endpoints.rest, {
+      'wstoken': token,
+      'wsfunction': 'core_user_get_users_by_field',
+      'moodlewsrestformat': 'json',
+      'field': 'username',
+      'values[]': username,
+    });
+
     final response = await client.get(url);
     final result = jsonDecode(response.body);
-    inspect(result);
+
     if (response.statusCode == 200) {
       storage.write('name', result[0]['fullname']);
       return UserModel.fromJson(result[0]);

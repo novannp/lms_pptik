@@ -42,19 +42,23 @@ dependencies:
     sdk: flutter
   go_router: ^7.1.1
   riverpod: ^2.3.6
-  intl: any
+  intl: ^0.18.1
   flutter_secure_storage: ^8.0.0
-  http: ^0.13.6
+  http: ^1.0.0
   flutter_riverpod: ^2.3.6
   loading_animation_widget: ^1.2.0+4
   shimmer: ^3.0.0
   flutter_svg: ^2.0.5
   html_unescape: ^2.0.0
   pull_to_refresh: ^2.0.0
-  flutter_widget_from_html: ^0.10.1
   syncfusion_flutter_calendar: ^21.2.6
   syncfusion_localizations: ^21.2.6
-  awesome_notifications: ^0.6.19
+  tutorial_coach_mark: ^1.2.8
+  flutter_html: ^3.0.0-beta.2
+  firebase_core: ^2.13.1
+  flutter_local_notifications: ^14.1.1
+  firebase_messaging: ^14.6.2
+  firebase_analytics: ^10.4.2
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +74,7 @@ dev_dependencies:
   custom_lint:
   build_runner: ^2.3.3
   flutter_launcher_icons: ^0.13.1
+  change_app_package_name: ^1.1.0
 
 flutter_launcher_icons:
   android: "launcher_icon"

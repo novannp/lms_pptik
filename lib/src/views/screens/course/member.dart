@@ -62,7 +62,7 @@ class Member extends ConsumerWidget {
     }, error: (error, stackTrace) {
       return Container();
     }, loading: () {
-      return Loading();
+      return const Loading();
     });
   }
 }

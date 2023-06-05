@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/io_client.dart';
 
 import '../../../models/event_model.dart';
+import '../../../utills/endpoints.dart';
 import '../../http/provider/http_provider.dart';
 
 final calendarProvider = Provider<CalendarRepository>((ref) {
@@ -18,10 +19,11 @@ class CalendarRepository {
   CalendarRepository(this.client);
 
   Future<List<EventModel>> getAllEvent(String token) async {
-    String baseUrl =
-        "https://lms.pptik.id/webservice/rest/server.php/?wstoken=$token&wsfunction=core_calendar_get_calendar_events&moodlewsrestformat=json";
-
-    Uri url = Uri.parse(baseUrl);
+    Uri url = Uri.https(Endpoints.baseUrl, Endpoints.rest, {
+      'wstoken': token,
+      'wsfunction': 'core_calendar_get_calendar_events',
+      'moodlewsrestformat': 'json',
+    });
     final response = await client.get(url);
     final result = jsonDecode(response.body)['events'];
     inspect(result);

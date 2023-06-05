@@ -46,7 +46,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               'assets/icons/logo.svg',
               width: 200,
             ),
-            Loading()
+            const Loading()
           ],
         ),
       ),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lms_pptik/src/models/course_model.dart';
+import 'package:lms_pptik/src/views/screens/chat/detail_chat_screen.dart';
 import 'package:lms_pptik/src/views/screens/login_screen.dart';
 import 'package:lms_pptik/src/views/screens/main_screen.dart';
+import 'package:lms_pptik/src/views/screens/settings/settings_screen.dart';
 
 import '../models/module.dart';
 import '../models/notification_model.dart';
@@ -12,6 +14,7 @@ import '../views/screens/notification/notification_detail.dart';
 import '../views/screens/notification/notification_screen.dart';
 import '../views/screens/recent_course_screen.dart';
 import '../views/screens/search_screen.dart';
+import '../views/screens/settings/notification_settings_screen.dart';
 import '../views/screens/splash_screen.dart';
 
 class AppRoutes {
@@ -100,6 +103,19 @@ class AppRoutes {
                 ),
               ]),
           GoRoute(
+              path: 'chat',
+              pageBuilder: _notificationScreenBuilder,
+              name: 'chat',
+              routes: [
+                GoRoute(
+                  path: 'detail_chat',
+                  pageBuilder: (context, state) {
+                    return const MaterialPage(child: DetailChatScreen());
+                  },
+                  name: 'detail_chat',
+                ),
+              ]),
+          GoRoute(
             path: 'recent_course',
             pageBuilder: _recentCoursesScreenBuilder,
             name: 'recent_course',
@@ -119,7 +135,26 @@ class AppRoutes {
             path: 'search',
             pageBuilder: _searchScreenBuilder,
             name: 'search',
-          )
+          ),
+          GoRoute(
+              path: 'settings',
+              pageBuilder: (context, state) {
+                return const MaterialPage(
+                  child: SettingsScreen(),
+                );
+              },
+              name: 'settings',
+              routes: [
+                GoRoute(
+                  path: 'notification_settings',
+                  name: 'notification_settings',
+                  pageBuilder: (context, state) {
+                    return const MaterialPage(
+                      child: NotificationSettingsScreen(),
+                    );
+                  },
+                ),
+              ])
         ],
       )
     ],

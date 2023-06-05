@@ -6,7 +6,6 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 import '../../features/calendar/provider/all_events_provider.dart';
 import '../../models/event_model.dart';
-import '../components/loading_widget.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
@@ -92,37 +91,55 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       child: events.when(
         data: (data) {
           return SafeArea(
-            child: SfCalendar(
-              cellEndPadding: 5,
-              allowAppointmentResize: true,
-              allowedViews: const [
-                CalendarView.schedule,
-                CalendarView.month,
-              ],
-              headerHeight: 60,
-              onTap: (detail) {},
-              headerStyle: CalendarHeaderStyle(
-                  backgroundColor:
-                      CupertinoTheme.of(context).barBackgroundColor,
-                  textStyle: CupertinoTheme.of(context)
-                      .textTheme
-                      .textStyle
-                      .copyWith(fontSize: 18)),
-              controller: _calendarController,
-              dataSource: EventsDataSource(data),
-              view: CalendarView.month,
-              initialDisplayDate: DateTime.now(),
-              showDatePickerButton: true,
-              showCurrentTimeIndicator: true,
-              monthViewSettings: const MonthViewSettings(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: SfCalendar(
+                cellEndPadding: 5,
+                allowAppointmentResize: true,
+                allowedViews: const [
+                  CalendarView.schedule,
+                  CalendarView.month,
+                ],
+                headerHeight: 60,
+                onTap: (detail) {},
+                headerStyle: CalendarHeaderStyle(
+                    backgroundColor:
+                        CupertinoTheme.of(context).barBackgroundColor,
+                    textStyle: CupertinoTheme.of(context)
+                        .textTheme
+                        .textStyle
+                        .copyWith(fontSize: 18)),
+                controller: _calendarController,
+                dataSource: EventsDataSource(data),
+                view: CalendarView.month,
+                initialDisplayDate: DateTime.now(),
+                showDatePickerButton: true,
+                showCurrentTimeIndicator: true,
+                monthViewSettings: MonthViewSettings(
+                  agendaStyle: AgendaStyle(
+                    appointmentTextStyle: CupertinoTheme.of(context)
+                        .textTheme
+                        .textStyle
+                        .copyWith(color: Colors.white),
+                    dateTextStyle: CupertinoTheme.of(context)
+                        .textTheme
+                        .textStyle
+                        .copyWith(fontSize: 12),
+                    dayTextStyle:
+                        CupertinoTheme.of(context).textTheme.textStyle,
+                  ),
+                  agendaItemHeight: 40,
+                  showAgenda: true,
                   appointmentDisplayMode:
-                      MonthAppointmentDisplayMode.appointment),
-              scheduleViewMonthHeaderBuilder: scheduleHeaderViewBuilder,
-              scheduleViewSettings: ScheduleViewSettings(
-                appointmentTextStyle:
-                    CupertinoTheme.of(context).textTheme.textStyle.copyWith(
-                          color: Colors.white,
-                        ),
+                      MonthAppointmentDisplayMode.appointment,
+                ),
+                scheduleViewMonthHeaderBuilder: scheduleHeaderViewBuilder,
+                scheduleViewSettings: ScheduleViewSettings(
+                  appointmentTextStyle:
+                      CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                            color: Colors.white,
+                          ),
+                ),
               ),
             ),
           );
@@ -133,7 +150,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           );
         },
         loading: () {
-          return Loading();
+          return const Center(
+            child: CupertinoActivityIndicator(),
+          );
         },
       ),
     );
