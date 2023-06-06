@@ -28,135 +28,86 @@ class ChatScreen extends ConsumerWidget {
         middle: Text('Obrolan'),
       ),
       child: SafeArea(
-        child: Column(
-          children: [
-            // Material(
-            //   child: ExpansionTile(
-            //     controlAffinity: ListTileControlAffinity.leading,
-            //     expandedAlignment: Alignment.centerLeft,
-            //     initiallyExpanded: true,
-            //     backgroundColor: CupertinoColors.white,
-            //     collapsedBackgroundColor: CupertinoColors.white,
-            //     title: Text(
-            //       'Favorit',
-            //       style: CupertinoTheme.of(context).textTheme.textStyle,
-            //     ),
-            //     children: selfConversation!.when(
-            //         data: (data) {
-            //           return [
-            //             CupertinoListTile(
-            //               onTap: () {
-            //                 GoRouter.of(context)
-            //                     .pushNamed('detail_chat', extra: data.id);
-            //               },
-            //               title: Text(
-            //                 '${data.members?.first.fullname}',
-            //                 style: CupertinoTheme.of(context)
-            //                     .textTheme
-            //                     .textStyle
-            //                     .copyWith(
-            //                         fontWeight: FontWeight.bold, fontSize: 16),
-            //               ),
-            //               leading: Badge(
-            //                 backgroundColor: CupertinoColors.activeGreen,
-            //                 offset: Offset(0, 25),
-            //                 label: Text('  '),
-            //                 child: CircleAvatar(
-            //                   radius: 60,
-            //                   backgroundImage: NetworkImage(
-            //                     data.members!.first.profileimageurl.toString(),
-            //                   ),
-            //                 ),
-            //               ),
-            //               leadingSize: 40,
-            //               subtitle: Html(
-            //                   data: data.messages!.isEmpty ||
-            //                           data.messages == null
-            //                       ? ''
-            //                       : data.messages!.first.text),
-            //               padding: const EdgeInsets.all(20),
-            //               backgroundColor: CupertinoColors.white,
-            //               trailing: const Icon(
-            //                 CupertinoIcons.chevron_forward,
-            //                 color: CupertinoColors.black,
-            //               ),
-            //             ),
-            //           ];
-            //         },
-            //         error: (error, stackTrace) {
-            //           return [];
-            //         },
-            //         loading: () => [
-            //               Center(
-            //                 child: const CupertinoActivityIndicator(),
-            //               ),
-            //             ]),
-            //   ),
-            // ),
-            Material(
-              child: ExpansionTile(
-                controlAffinity: ListTileControlAffinity.leading,
-                expandedAlignment: Alignment.centerLeft,
-                initiallyExpanded: true,
-                backgroundColor: CupertinoColors.white,
-                collapsedBackgroundColor: CupertinoColors.white,
-                title: Text(
-                  'Pribadi',
-                  style: CupertinoTheme.of(context).textTheme.textStyle,
-                ),
-                children: allConversation!.when(
-                    data: (data) {
-                      return data.map((e) {
-                        return CupertinoListTile(
-                          onTap: () {
-                            if (kDebugMode) {
-                              print(' ini Id${e.id}');
-                            }
-                            ref.watch(conversationIdProvider.notifier).state =
-                                e.id!;
-                            GoRouter.of(context).pushNamed('detail_chat');
+        child: CustomScrollView(
+          slivers: [
+            CupertinoSliverRefreshControl(
+              onRefresh: () => ref.refresh(
+                  allConversationsProvider(user.value!.id as int).future),
+            ),
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  Material(
+                    child: ExpansionTile(
+                      controlAffinity: ListTileControlAffinity.leading,
+                      expandedAlignment: Alignment.centerLeft,
+                      initiallyExpanded: true,
+                      backgroundColor: CupertinoColors.white,
+                      collapsedBackgroundColor: CupertinoColors.white,
+                      title: Text(
+                        'Pribadi',
+                        style: CupertinoTheme.of(context).textTheme.textStyle,
+                      ),
+                      children: allConversation!.when(
+                          data: (data) {
+                            return data.map((e) {
+                              return CupertinoListTile(
+                                onTap: () {
+                                  if (kDebugMode) {
+                                    print(e.members!.first.fullname);
+                                  }
+                                  ref
+                                      .watch(conversationIdProvider.notifier)
+                                      .state = e.id!;
+                                  GoRouter.of(context).pushNamed('detail_chat');
+                                },
+                                title: Text(
+                                  '${e.members!.first.fullname}',
+                                  style: CupertinoTheme.of(context)
+                                      .textTheme
+                                      .textStyle
+                                      .copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
+                                ),
+                                leading: Badge(
+                                  backgroundColor: CupertinoColors.activeGreen,
+                                  offset: const Offset(0, 25),
+                                  label: const Text('  '),
+                                  child: CircleAvatar(
+                                    radius: 60,
+                                    backgroundImage: NetworkImage(
+                                      e.members!.first.profileimageurl
+                                          .toString(),
+                                    ),
+                                  ),
+                                ),
+                                leadingSize: 40,
+                                subtitle: Html(
+                                    data: e.messages!.isEmpty ||
+                                            e.messages == null
+                                        ? ''
+                                        : e.messages!.first.text),
+                                padding: const EdgeInsets.all(20),
+                                backgroundColor: CupertinoColors.white,
+                                trailing: const Icon(
+                                  CupertinoIcons.chevron_forward,
+                                  color: CupertinoColors.black,
+                                ),
+                              );
+                            }).toList();
                           },
-                          title: Text(
-                            '${e.members!.first.fullname}',
-                            style: CupertinoTheme.of(context)
-                                .textTheme
-                                .textStyle
-                                .copyWith(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          leading: Badge(
-                            backgroundColor: CupertinoColors.activeGreen,
-                            offset: const Offset(0, 25),
-                            label: const Text('  '),
-                            child: CircleAvatar(
-                              radius: 60,
-                              backgroundImage: NetworkImage(
-                                e.members!.first.profileimageurl.toString(),
-                              ),
-                            ),
-                          ),
-                          leadingSize: 40,
-                          subtitle: Html(
-                              data: e.messages!.isEmpty || e.messages == null
-                                  ? ''
-                                  : e.messages!.first.text),
-                          padding: const EdgeInsets.all(20),
-                          backgroundColor: CupertinoColors.white,
-                          trailing: const Icon(
-                            CupertinoIcons.chevron_forward,
-                            color: CupertinoColors.black,
-                          ),
-                        );
-                      }).toList();
-                    },
-                    error: (error, stackTrace) {
-                      return [Text(error.toString())];
-                    },
-                    loading: () => [
-                          const Center(
-                            child: CupertinoActivityIndicator(),
-                          ),
-                        ]),
+                          error: (error, stackTrace) {
+                            return [Text(error.toString())];
+                          },
+                          loading: () => [
+                                const Center(
+                                  child: CupertinoActivityIndicator(),
+                                ),
+                              ]),
+                    ),
+                  )
+                ],
               ),
             )
           ],

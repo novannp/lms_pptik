@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lms_pptik/src/models/course_model.dart';
+import 'package:lms_pptik/src/views/screens/badge_screen.dart';
 import 'package:lms_pptik/src/views/screens/chat/detail_chat_screen.dart';
 import 'package:lms_pptik/src/views/screens/login_screen.dart';
 import 'package:lms_pptik/src/views/screens/main_screen.dart';
@@ -88,6 +89,13 @@ class AppRoutes {
         name: main,
         pageBuilder: _mainScreenBuilder,
         routes: [
+          GoRoute(
+            path: 'badge',
+            pageBuilder: (context, state) {
+              return MaterialPage(child: BadgeScreen());
+            },
+            name: 'badge',
+          ),
           GoRoute(
               path: 'notifications',
               pageBuilder: _notificationScreenBuilder,

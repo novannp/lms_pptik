@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lms_pptik/src/extentions/int_extensions.dart';
 import 'package:lms_pptik/src/extentions/string_extensions.dart';
 
@@ -42,6 +43,9 @@ class NotificationDetailScreen extends ConsumerWidget {
                 child: Html(
                   data: notificationModel.fullmessagehtml ??
                       notificationModel.text,
+                  onLinkTap: (url, attributes, element) {
+                    handleDeepLink(context, url);
+                  },
                 ),
               ),
             ),
@@ -49,5 +53,15 @@ class NotificationDetailScreen extends ConsumerWidget {
         ]),
       ),
     );
+  }
+
+  void handleDeepLink(BuildContext context, String? link) {
+    if (link != null) {
+      final Uri uri = Uri.parse(link);
+      if (uri.host == 'lms.pptik.id' && uri.path == '/badges/mybadges.php') {
+        // Navigasikan ke halaman lencana
+        GoRouter.of(context).pushNamed('badge');
+      }
+    }
   }
 }

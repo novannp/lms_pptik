@@ -2,10 +2,17 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lms_pptik/src/features/auth/data/auth_repository.dart';
+import 'package:lms_pptik/src/features/badge/provider/get_all_badges.dart';
+import 'package:lms_pptik/src/features/calendar/data/calendar_repository.dart';
+import 'package:lms_pptik/src/features/calendar/provider/all_events_provider.dart';
+import 'package:lms_pptik/src/features/chat/provider/all_conversations.dart';
+import 'package:lms_pptik/src/features/chat/provider/conversation_by_id.dart';
+import 'package:lms_pptik/src/features/notification/provider/user_notification.dart';
 import 'package:lms_pptik/src/features/user/provider/user_provider.dart';
 import 'package:lms_pptik/src/views/screens/main_screen.dart';
 
 import '../../notification/data/notification_provider.dart';
+import '../../notification/provider/notification_settings.dart';
 import '../../storage/provider/storage_provider.dart';
 import '../../storage/service/secure_storage_service.dart';
 
@@ -53,6 +60,12 @@ class AuthNotifier extends StateNotifier<String> {
     ref.invalidate(userProvider);
     ref.invalidate(indexProvider);
     ref.invalidate(notifiedProvider);
+    ref.invalidate(allConversationsProvider);
+    ref.invalidate(getAllBadgesProvider);
+    ref.invalidate(allEventProvider);
+    ref.invalidate(conversationIdProvider);
+    ref.invalidate(notificationSettingsProvider);
+    ref.invalidate(userNotificationProvider);
   }
 }
 

@@ -63,6 +63,8 @@ class NotificationRepository {
       inspect(listNotifications);
       listNotifications
           .sort((a, b) => b.timecreated!.compareTo(a.timecreated!));
+      listNotifications.removeWhere((element) =>
+          element.notification == 0 || element.notification == null);
       return listNotifications;
     } else {
       throw Exception();

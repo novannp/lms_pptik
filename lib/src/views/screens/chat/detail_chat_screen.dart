@@ -61,13 +61,22 @@ class _DetailChatScreenState extends ConsumerState<DetailChatScreen> {
       navigationBar: CupertinoNavigationBar(
         middle: conversation.when(
           data: (data) {
+            if (data.members!.isEmpty) {
+              return const CupertinoListTile(
+                padding: EdgeInsets.all(5),
+                leadingSize: 45,
+                leading: CircleAvatar(),
+                title: Text('Belum ada percakapan'),
+                subtitle: Text('Offline'),
+              );
+            }
             return CupertinoListTile(
               padding: const EdgeInsets.all(5),
               leadingSize: 45,
               leading: CircleAvatar(
-                  backgroundImage: NetworkImage(
-                      data.members!.first.profileimageurl as String)),
-              title: Text(data.members!.first.fullname as String),
+                  backgroundImage:
+                      NetworkImage(data.members![0].profileimageurl as String)),
+              title: Text(data.members![0].fullname as String),
               subtitle: Text(
                   data.members!.first.isonline == true ? 'Online' : 'Offline'),
             );
@@ -106,7 +115,7 @@ class _DetailChatScreenState extends ConsumerState<DetailChatScreen> {
                         !isSameDate(message.timecreated!.toDate(),
                             previousMessage.timecreated!.toDate());
                     return Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (showDateSection)
@@ -172,7 +181,8 @@ class _DetailChatScreenState extends ConsumerState<DetailChatScreen> {
                                     true;
                                 final temp = _messageController.text;
 
-                                await Future.delayed(Duration(seconds: 1), () {
+                                await Future.delayed(const Duration(seconds: 1),
+                                    () {
                                   ref.read(sendMessageProvider(temp));
 
                                   ref
